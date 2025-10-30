@@ -1,24 +1,35 @@
 package com.sociusfit.app
 
 import android.app.Application
-import dagger.hilt.android.HiltAndroidApp
+import com.sociusfit.app.di.dataStoreModule
+import com.sociusfit.app.di.databaseModule
+import com.sociusfit.app.di.networkModule
+import com.sociusfit.app.di.repositoryModule
+import com.sociusfit.app.di.useCaseModule
+import com.sociusfit.app.di.viewModelModule
+import org.koin.android.ext.koin.androidContext
+import org.koin.core.context.startKoin
 import timber.log.Timber
 
-/**
- * Classe Application principale di SociusFit.
- * Annotata con @HiltAndroidApp per abilitare la dependency injection con Hilt.
- */
-@HiltAndroidApp
 class SociusFitApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
 
-        // Inizializza Timber per logging
-        if (BuildConfig.DEBUG) {
-            Timber.plant(Timber.DebugTree())
+        Timber.plant(Timber.DebugTree())
+
+        startKoin {
+            androidContext(this@SociusFitApplication)
+            modules(
+                networkModule,
+                dataStoreModule,
+                databaseModule,
+                repositoryModule,
+                useCaseModule,
+                viewModelModule
+            )
         }
 
-        Timber.d("SociusFit Application started")
+        Timber.d("SociusFit Application started with Koin")
     }
 }
