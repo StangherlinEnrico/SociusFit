@@ -1,0 +1,203 @@
+PROPRIETARY SOFTWARE LICENSE
+
+Copyright (c) 2025 SociusFit. All Rights Reserved.
+
+================================================================================
+NOTICE: THIS SOFTWARE IS PROPRIETARY AND CONFIDENTIAL
+================================================================================
+
+This software and associated documentation files (the "Software") are the
+exclusive property of the copyright holder. All rights are reserved.
+
+NO PERMISSION IS GRANTED TO ANY PERSON OR ENTITY TO:
+
+1. USE this Software in any form or manner
+2. COPY this Software in whole or in part
+3. MODIFY, adapt, translate, or create derivative works based on this Software
+4. DISTRIBUTE, sublicense, lease, rent, loan, or transfer this Software
+5. REVERSE ENGINEER, decompile, or disassemble this Software
+6. VIEW the source code for any purpose other than the authorized owner
+7. EXTRACT, reference, or take inspiration from any concept, algorithm,
+   architecture, design pattern, or implementation detail
+8. USE any ideas, concepts, know-how, or techniques contained in or derived
+   from this Software
+9. CREATE similar or competing software based on knowledge gained from viewing
+   this Software
+10. SHARE, discuss, or disclose any information about this Software with any
+    third party
+
+================================================================================
+ABSOLUTE PROHIBITION
+================================================================================
+
+This Software is provided for VIEWING BY THE COPYRIGHT HOLDER ONLY.
+
+Any access to this Software by any person or entity other than the explicitly
+authorized copyright holder constitutes:
+
+- Unauthorized access to proprietary information
+- Violation of intellectual property rights
+- Breach of confidentiality
+- Potential criminal activity under applicable laws
+
+NO LICENSE, EXPRESS OR IMPLIED, BY ESTOPPEL OR OTHERWISE, IS GRANTED.
+
+No part of this Software may be used as:
+
+- Reference material
+- Educational content
+- Inspiration for similar projects
+- Basis for any other software development
+- Example code or template
+- Learning resource
+
+================================================================================
+INTELLECTUAL PROPERTY RIGHTS
+================================================================================
+
+All intellectual property rights in and to this Software, including but not
+limited to:
+
+- Source code and object code
+- Algorithms and business logic
+- User interface designs
+- Database schemas and structures
+- API designs and implementations
+- Architectural patterns
+- Documentation and comments
+- Concepts and ideas
+- Trade secrets and know-how
+
+are and shall remain the exclusive property of the copyright holder.
+
+================================================================================
+RESTRICTIONS ON DERIVATIVE WORKS
+================================================================================
+
+NO DERIVATIVE WORKS of any kind are permitted, including but not limited to:
+
+- Modified versions
+- Translated versions
+- Adaptations or arrangements
+- Collections or compilations that include any portion of this Software
+- Any work based upon or derived from this Software
+- Any software that implements similar functionality
+- Any software inspired by concepts in this Software
+
+================================================================================
+CONFIDENTIALITY
+================================================================================
+
+This Software contains trade secrets and proprietary information. Any person
+who gains access to this Software must:
+
+1. Maintain strict confidentiality
+2. Not disclose any information to any third party
+3. Not use any information for any purpose
+4. Immediately destroy any unauthorized copies
+5. Report any unauthorized access or disclosure
+
+================================================================================
+NO WARRANTY AND LIABILITY
+================================================================================
+
+THIS SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND.
+
+The copyright holder makes no warranties, express or implied, including but
+not limited to warranties of merchantability, fitness for a particular
+purpose, or non-infringement.
+
+IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES, OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE,
+ARISING FROM, OUT OF, OR IN CONNECTION WITH THIS SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THIS SOFTWARE, INCLUDING BUT NOT LIMITED TO:
+
+- Direct, indirect, incidental, or consequential damages
+- Special, exemplary, or punitive damages
+- Loss of profits, revenue, data, or use
+- Business interruption
+- Procurement of substitute goods or services
+- Personal injury or property damage
+- Any other losses or damages of any kind
+
+================================================================================
+LEGAL ENFORCEMENT
+================================================================================
+
+Unauthorized use, copying, distribution, modification, or any other violation
+of this license will result in:
+
+1. Immediate termination of any viewing rights
+2. Civil legal action for damages
+3. Injunctive relief to prevent further violations
+4. Recovery of attorneys' fees and court costs
+5. Pursuit of criminal charges where applicable
+6. Maximum penalties under applicable law
+
+The copyright holder reserves all rights to enforce this license to the
+fullest extent permitted by law in any jurisdiction.
+
+================================================================================
+JURISDICTION AND APPLICABLE LAW
+================================================================================
+
+This license shall be governed by and construed in accordance with the laws
+of the jurisdiction of the copyright holder, without regard to conflicts of
+law principles.
+
+Any legal action or proceeding relating to this Software shall be brought
+exclusively in the courts of the copyright holder's jurisdiction.
+
+================================================================================
+SEVERABILITY
+================================================================================
+
+If any provision of this license is held to be invalid or unenforceable, the
+remaining provisions shall continue in full force and effect.
+
+================================================================================
+ENTIRE AGREEMENT
+================================================================================
+
+This license constitutes the entire agreement between the parties concerning
+the Software and supersedes all prior or contemporaneous agreements,
+representations, warranties, and understandings.
+
+NO MODIFICATION of this license is valid unless in writing and signed by an
+authorized representative of the copyright holder.
+
+================================================================================
+ACKNOWLEDGMENT
+================================================================================
+
+BY ACCESSING, VIEWING, OR POSSESSING THIS SOFTWARE, YOU ACKNOWLEDGE THAT:
+
+1. You have read and understood this license
+2. You agree to be bound by all terms and conditions
+3. You understand that violation may result in severe legal consequences
+4. You have no rights to use, modify, or distribute this Software
+5. You will immediately cease all access if not authorized
+6. You will maintain absolute confidentiality
+
+================================================================================
+
+PROJECT INFORMATION
+
+Project Name: SociusFit
+Version: 0.1.0
+Description: A social sports networking application that connects people who
+share the same passion for sports, facilitating the organization
+of sports sessions based on skill level, availability, and
+geographic proximity.
+
+Target Platform: Android (API 26+)
+Programming Language: Kotlin
+Architecture: Clean Architecture with MVVM pattern
+
+================================================================================
+
+This license is effective as of October 30, 2025.
+
+ALL RIGHTS RESERVED. NO PERMISSIONS GRANTED.
+
+================================================================================

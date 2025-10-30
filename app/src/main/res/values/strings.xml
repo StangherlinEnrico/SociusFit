@@ -1,0 +1,90 @@
+<resources>
+    <!-- App Name -->
+    <string name="app_name">SociusFit</string>
+
+    <!-- Common -->
+    <string name="ok">OK</string>
+    <string name="cancel">Annulla</string>
+    <string name="save">Salva</string>
+    <string name="delete">Elimina</string>
+    <string name="edit">Modifica</string>
+    <string name="back">Indietro</string>
+    <string name="next">Avanti</string>
+    <string name="done">Fatto</string>
+    <string name="loading">Caricamento…</string>
+    <string name="error">Errore</string>
+    <string name="retry">Riprova</string>
+    <string name="close">Chiudi</string>
+
+    <!-- Auth -->
+    <string name="login">Accedi</string>
+    <string name="register">Registrati</string>
+    <string name="logout">Esci</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="confirm_password">Conferma Password</string>
+    <string name="forgot_password">Password dimenticata?</string>
+    <string name="dont_have_account">Non hai un account?</string>
+    <string name="already_have_account">Hai già un account?</string>
+
+    <!-- Profile -->
+    <string name="profile">Profilo</string>
+    <string name="edit_profile">Modifica Profilo</string>
+    <string name="name">Nome</string>
+    <string name="city">Città</string>
+    <string name="radius">Raggio (km)</string>
+    <string name="sports">Sport</string>
+    <string name="add_sport">Aggiungi Sport</string>
+    <string name="level">Livello</string>
+    <string name="availability">Disponibilità</string>
+
+    <!-- Sport Levels -->
+    <string name="level_beginner">Principiante</string>
+    <string name="level_intermediate">Intermedio</string>
+    <string name="level_advanced">Avanzato</string>
+    <string name="level_pro">Professionista</string>
+
+    <!-- Time Slots -->
+    <string name="time_morning">Mattina</string>
+    <string name="time_afternoon">Pomeriggio</string>
+    <string name="time_evening">Sera</string>
+    <string name="time_night">Notte</string>
+
+    <!-- Days of Week -->
+    <string name="monday">Lunedì</string>
+    <string name="tuesday">Martedì</string>
+    <string name="wednesday">Mercoledì</string>
+    <string name="thursday">Giovedì</string>
+    <string name="friday">Venerdì</string>
+    <string name="saturday">Sabato</string>
+    <string name="sunday">Domenica</string>
+
+    <!-- Match -->
+    <string name="match">Match</string>
+    <string name="find_match">Trova Partner</string>
+    <string name="search_match">Cerca Match</string>
+    <string name="select_sport">Seleziona Sport</string>
+    <string name="select_time">Seleziona Orario</string>
+    <string name="compatibility">Compatibilità</string>
+    <string name="distance">Distanza</string>
+    <string name="its_a_match">È un Match!</string>
+    <string name="no_more_matches">Nessun altro match disponibile</string>
+
+    <!-- Notifications -->
+    <string name="notifications">Notifiche</string>
+    <string name="new_match_notification">Hai un nuovo match!</string>
+
+    <!-- Errors -->
+    <string name="error_generic">Si è verificato un errore</string>
+    <string name="error_network">Errore di connessione</string>
+    <string name="error_invalid_email">Email non valida</string>
+    <string name="error_invalid_password">Password non valida (minimo 8 caratteri)</string>
+    <string name="error_passwords_dont_match">Le password non coincidono</string>
+    <string name="error_empty_field">Campo obbligatorio</string>
+    <string name="error_login_failed">Login fallito</string>
+    <string name="error_register_failed">Registrazione fallita</string>
+
+    <!-- Success Messages -->
+    <string name="success_profile_updated">Profilo aggiornato con successo</string>
+    <string name="success_logout">Logout effettuato</string>
+</resources>
