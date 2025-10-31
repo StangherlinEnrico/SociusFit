@@ -1,8 +1,5 @@
 package com.sociusfit.app.core
 
-/**
- * Costanti globali dell'applicazione SociusFit
- */
 object Constants {
 
     // API Configuration
@@ -26,13 +23,13 @@ object Constants {
     const val WEIGHT_DISTANCE_PROXIMITY = 0.3f
 
     // Matching Parameters
-    const val MAX_LEVEL_DIFFERENCE = 1 // Differenza massima di livello accettabile
-    const val DEFAULT_RADIUS_KM = 10 // Raggio default in km
+    const val MAX_LEVEL_DIFFERENCE = 1
+    const val DEFAULT_RADIUS_KM = 10
     const val MIN_RADIUS_KM = 5
     const val MAX_RADIUS_KM = 50
 
     // UI Constants
-    const val SWIPE_THRESHOLD = 0.4f // Soglia per considerare uno swipe valido
+    const val SWIPE_THRESHOLD = 0.4f
     const val ANIMATION_DURATION_MS = 300
     const val DEBOUNCE_TIME_MS = 300L
 

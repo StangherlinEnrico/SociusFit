@@ -4,9 +4,6 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.sociusfit.app.domain.model.User
 
-/**
- * Entità Room per salvare i dati utente localmente
- */
 @Entity(tableName = "users")
 data class UserEntity(
     @PrimaryKey
@@ -16,13 +13,10 @@ data class UserEntity(
     val city: String,
     val radiusKm: Int,
     val profileImageUrl: String?,
-    val sportsJson: String, // JSON serialized list of UserSport
-    val availabilityJson: String // JSON serialized list of Availability
+    val sportsJson: String,
+    val availabilityJson: String
 )
 
-/**
- * Conversione da UserEntity a User (domain model)
- */
 fun UserEntity.toDomain(): User {
     // TODO: Implementare deserializzazione JSON per sports e availability
     return User(
@@ -37,9 +31,6 @@ fun UserEntity.toDomain(): User {
     )
 }
 
-/**
- * Conversione da User (domain model) a UserEntity
- */
 fun User.toEntity(): UserEntity {
     // TODO: Implementare serializzazione JSON per sports e availability
     return UserEntity(

@@ -1,8 +1,5 @@
 package com.sociusfit.app.domain.model
 
-/**
- * Livelli di competenza sportiva
- */
 enum class SportLevel(val displayName: String) {
     BEGINNER("Principiante"),
     INTERMEDIATE("Intermedio"),
@@ -16,9 +13,6 @@ enum class SportLevel(val displayName: String) {
     }
 }
 
-/**
- * Fasce orarie disponibili per le sessioni sportive
- */
 enum class TimeSlot(val displayName: String, val startHour: Int, val endHour: Int) {
     MORNING("Mattina", 6, 12),
     AFTERNOON("Pomeriggio", 12, 18),

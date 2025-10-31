@@ -1,12 +1,7 @@
 package com.sociusfit.app
 
 import android.app.Application
-import com.sociusfit.app.di.dataStoreModule
-import com.sociusfit.app.di.databaseModule
-import com.sociusfit.app.di.networkModule
-import com.sociusfit.app.di.repositoryModule
-import com.sociusfit.app.di.useCaseModule
-import com.sociusfit.app.di.viewModelModule
+import com.sociusfit.app.di.*
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 import timber.log.Timber

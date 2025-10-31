@@ -7,10 +7,6 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-/**
- * Type converters per Room Database
- * Permettono di salvare tipi complessi nel database
- */
 class Converters {
 
     private val gson = Gson()

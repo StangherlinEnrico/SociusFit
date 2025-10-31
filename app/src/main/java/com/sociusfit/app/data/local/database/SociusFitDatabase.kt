@@ -7,9 +7,6 @@ import com.sociusfit.app.core.Constants
 import com.sociusfit.app.data.local.database.dao.UserDao
 import com.sociusfit.app.data.local.database.entity.UserEntity
 
-/**
- * Database Room principale di SociusFit
- */
 @Database(
     entities = [
         UserEntity::class

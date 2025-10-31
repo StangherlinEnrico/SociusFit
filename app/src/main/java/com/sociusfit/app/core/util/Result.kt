@@ -1,14 +1,9 @@
 package com.sociusfit.app.core.util
 
-/**
- * Wrapper per gestione uniforme dei risultati delle operazioni.
- * Permette di gestire successo ed errori in modo type-safe.
- */
 sealed class Result<out T> {
     data class Success<T>(val data: T) : Result<T>()
     data class Error(val exception: Exception, val message: String? = null) : Result<Nothing>()
 
-    // Utility methods
     val isSuccess: Boolean
         get() = this is Success
 
@@ -42,9 +37,6 @@ sealed class Result<out T> {
     }
 }
 
-/**
- * Esegue un blocco di codice e wrappa il risultato in Result
- */
 inline fun <T> resultOf(block: () -> T): Result<T> {
     return try {
         Result.success(block())

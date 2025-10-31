@@ -1,7 +1,6 @@
 package com.sociusfit.app.domain.model
 
 import java.time.DayOfWeek
-import java.time.LocalDate
 
 /**
  * Modello di dominio per l'utente
