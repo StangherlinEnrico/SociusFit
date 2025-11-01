@@ -1,6 +1,11 @@
 package com.sociusfit.app.presentation.navigation
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -26,52 +31,97 @@ fun SociusFitNavHost(
         startDestination = startDestination,
         modifier = modifier
     ) {
-        // Splash Screen
+        // Splash Screen - ✅ IMPLEMENTATO
         composable(Routes.SPLASH) {
-            // TODO: Implementare SplashScreen
-            // SplashScreen(navController = navController)
+            com.sociusfit.app.presentation.splash.SplashScreen(navController = navController)
         }
 
-        // Auth Flow
+        // Auth Flow - ✅ IMPLEMENTATO
         composable(Routes.LOGIN) {
-            // TODO: Implementare LoginScreen
-            // LoginScreen(navController = navController)
+            com.sociusfit.app.presentation.auth.login.LoginScreen(navController = navController)
         }
 
         composable(Routes.REGISTER) {
-            // TODO: Implementare RegisterScreen
-            // RegisterScreen(navController = navController)
+            com.sociusfit.app.presentation.auth.register.RegisterScreen(navController = navController)
         }
 
         composable(Routes.PROFILE_SETUP) {
-            // TODO: Implementare ProfileSetupScreen
-            // ProfileSetupScreen(navController = navController)
+            // TODO: Implementare ProfileSetupScreen (Fase 2)
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Profile Setup - Coming Soon (Fase 2)",
+                    style = MaterialTheme.typography.headlineMedium
+                )
+            }
         }
 
         // Main Flow
         composable(Routes.MATCH) {
-            // TODO: Implementare MatchScreen
-            // MatchScreen(navController = navController)
+            // TODO: Implementare MatchScreen (Fase 3) - Per ora placeholder
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Match Screen - Coming Soon (Fase 3)",
+                    style = MaterialTheme.typography.headlineMedium
+                )
+            }
         }
 
         composable(Routes.MATCH_SEARCH) {
-            // TODO: Implementare MatchSearchScreen
-            // MatchSearchScreen(navController = navController)
+            // TODO: Implementare MatchSearchScreen (Fase 3)
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Match Search - Coming Soon (Fase 3)",
+                    style = MaterialTheme.typography.headlineMedium
+                )
+            }
         }
 
         composable(Routes.PROFILE) {
-            // TODO: Implementare ProfileScreen
-            // ProfileScreen(navController = navController)
+            // TODO: Implementare ProfileScreen (Fase 2)
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Profile - Coming Soon (Fase 2)",
+                    style = MaterialTheme.typography.headlineMedium
+                )
+            }
         }
 
         composable(Routes.PROFILE_EDIT) {
-            // TODO: Implementare ProfileEditScreen
-            // ProfileEditScreen(navController = navController)
+            // TODO: Implementare ProfileEditScreen (Fase 2)
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Profile Edit - Coming Soon (Fase 2)",
+                    style = MaterialTheme.typography.headlineMedium
+                )
+            }
         }
 
         composable(Routes.NOTIFICATIONS) {
-            // TODO: Implementare NotificationsScreen
-            // NotificationsScreen(navController = navController)
+            // TODO: Implementare NotificationsScreen (Fase 4)
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Notifications - Coming Soon (Fase 4)",
+                    style = MaterialTheme.typography.headlineMedium
+                )
+            }
         }
     }
 }
@@ -85,6 +135,10 @@ fun NavHostController.navigateToLogin() {
     }
 }
 
+fun NavHostController.navigateToRegister() {
+    navigate(Routes.REGISTER)
+}
+
 fun NavHostController.navigateToProfileSetup() {
     navigate(Routes.PROFILE_SETUP) {
         popUpTo(Routes.REGISTER) { inclusive = true }
@@ -93,7 +147,7 @@ fun NavHostController.navigateToProfileSetup() {
 
 fun NavHostController.navigateToMatch() {
     navigate(Routes.MATCH) {
-        popUpTo(Routes.PROFILE_SETUP) { inclusive = true }
+        popUpTo(0) { inclusive = true }
     }
 }
 
@@ -107,4 +161,8 @@ fun NavHostController.navigateToProfile() {
 
 fun NavHostController.navigateToProfileEdit() {
     navigate(Routes.PROFILE_EDIT)
+}
+
+fun NavHostController.navigateToNotifications() {
+    navigate(Routes.NOTIFICATIONS)
 }

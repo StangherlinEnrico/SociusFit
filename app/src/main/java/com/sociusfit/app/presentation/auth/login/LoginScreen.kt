@@ -1,8 +1,8 @@
 package com.sociusfit.app.presentation.auth.login
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,6 +13,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -26,6 +27,7 @@ import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.sociusfit.app.core.util.UiState
 import com.sociusfit.app.core.util.showToast
@@ -34,7 +36,6 @@ import com.sociusfit.app.presentation.components.SFLoadingIndicator
 import com.sociusfit.app.presentation.components.SFPasswordTextField
 import com.sociusfit.app.presentation.components.SFTextField
 import com.sociusfit.app.presentation.navigation.navigateToMatch
-import com.sociusfit.app.presentation.theme.spacing
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -72,26 +73,36 @@ fun LoginScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(MaterialTheme.spacing.medium),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Spacer(modifier = Modifier.height(80.dp))
+
+            // Logo e titolo
+            Text(
+                text = "👟",
+                style = MaterialTheme.typography.displayLarge
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             Text(
                 text = "SociusFit",
-                style = MaterialTheme.typography.displayMedium,
+                style = MaterialTheme.typography.displaySmall,
                 color = MaterialTheme.colorScheme.primary
             )
 
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraSmall))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Trova il tuo partner sportivo",
-                style = MaterialTheme.typography.bodyLarge,
+                text = "Il tuo partner sportivo perfetto",
+                style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.huge))
+            Spacer(modifier = Modifier.height(48.dp))
 
+            // Form di login
             SFTextField(
                 value = email,
                 onValueChange = viewModel::onEmailChange,
@@ -107,7 +118,7 @@ fun LoginScreen(
                 )
             )
 
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+            Spacer(modifier = Modifier.height(16.dp))
 
             SFPasswordTextField(
                 value = password,
@@ -124,7 +135,7 @@ fun LoginScreen(
                 )
             )
 
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
+            Spacer(modifier = Modifier.height(32.dp))
 
             SFButton(
                 text = "Accedi",
@@ -133,14 +144,71 @@ fun LoginScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            TextButton(
-                onClick = { navController.navigate("register") },
-                enabled = !uiState.isLoading
+            // Divider con "oppure"
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Non hai un account? Registrati")
+                HorizontalDivider(modifier = Modifier.weight(1f))
+                Text(
+                    text = "  oppure  ",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                HorizontalDivider(modifier = Modifier.weight(1f))
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Social login buttons
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp)
+            ) {
+                // Google login
+                androidx.compose.material3.OutlinedButton(
+                    onClick = { /* TODO: Implementare Google Sign In */ },
+                    modifier = Modifier.weight(1f),
+                    enabled = !uiState.isLoading
+                ) {
+                    Text("🔍 Google")
+                }
+
+                // Apple login
+                androidx.compose.material3.OutlinedButton(
+                    onClick = { /* TODO: Implementare Apple Sign In */ },
+                    modifier = Modifier.weight(1f),
+                    enabled = !uiState.isLoading
+                ) {
+                    Text(" Apple")
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Link registrazione
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Non hai un account?",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                TextButton(
+                    onClick = { navController.navigate("register") },
+                    enabled = !uiState.isLoading
+                ) {
+                    Text(
+                        text = "Registrati",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
         }
 
         if (uiState.isLoading) {

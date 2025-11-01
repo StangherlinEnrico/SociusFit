@@ -4,6 +4,7 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.sociusfit.app.core.Constants
 import com.sociusfit.app.data.local.datastore.DataStoreManager
+import com.sociusfit.app.data.remote.api.AuthApiService
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
@@ -63,5 +64,9 @@ val networkModule = module {
             .client(get())
             .addConverterFactory(GsonConverterFactory.create(get()))
             .build()
+    }
+
+    single<AuthApiService> {
+        get<Retrofit>().create(AuthApiService::class.java)
     }
 }
