@@ -1,5 +1,6 @@
 package com.sociusfit.app.presentation.auth.login
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,13 +9,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -26,9 +31,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.sociusfit.app.R
 import com.sociusfit.app.core.util.UiState
 import com.sociusfit.app.core.util.showToast
 import com.sociusfit.app.presentation.components.SFButton
@@ -168,21 +175,35 @@ fun LoginScreen(
                 horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp)
             ) {
                 // Google login
-                androidx.compose.material3.OutlinedButton(
+                OutlinedButton(
                     onClick = { /* TODO: Implementare Google Sign In */ },
                     modifier = Modifier.weight(1f),
                     enabled = !uiState.isLoading
                 ) {
-                    Text("🔍 Google")
+                    Icon(
+                        painter = painterResource(id = R.drawable.google_logo),
+                        contentDescription = "Google logo",
+                        modifier = Modifier.size(20.dp),
+                        tint = androidx.compose.ui.graphics.Color.Unspecified
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Google")
                 }
 
                 // Apple login
-                androidx.compose.material3.OutlinedButton(
+                OutlinedButton(
                     onClick = { /* TODO: Implementare Apple Sign In */ },
                     modifier = Modifier.weight(1f),
                     enabled = !uiState.isLoading
                 ) {
-                    Text(" Apple")
+                    Icon(
+                        painter = painterResource(id = R.drawable.apple_logo),
+                        contentDescription = "Apple logo",
+                        modifier = Modifier.size(20.dp),
+                        tint = androidx.compose.ui.graphics.Color.Unspecified
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Apple")
                 }
             }
 

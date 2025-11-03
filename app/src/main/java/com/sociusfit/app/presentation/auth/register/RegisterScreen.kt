@@ -1,20 +1,26 @@
 package com.sociusfit.app.presentation.auth.register
 
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -26,17 +32,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.sociusfit.app.R
 import com.sociusfit.app.core.util.UiState
 import com.sociusfit.app.core.util.showToast
 import com.sociusfit.app.presentation.components.SFButton
-import com.sociusfit.app.presentation.components.SFCenteredTopAppBar
 import com.sociusfit.app.presentation.components.SFLoadingIndicator
 import com.sociusfit.app.presentation.components.SFPasswordTextField
 import com.sociusfit.app.presentation.components.SFTextField
 import com.sociusfit.app.presentation.navigation.navigateToProfileSetup
-import com.sociusfit.app.presentation.theme.spacing
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -78,24 +85,34 @@ fun RegisterScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(MaterialTheme.spacing.medium),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            SFCenteredTopAppBar(
-                title = "Registrazione",
-                onNavigationClick = { navController.popBackStack() }
+            Spacer(modifier = Modifier.height(60.dp))
+
+            // Logo e titolo
+            Text(
+                text = "👟",
+                style = MaterialTheme.typography.displayLarge
             )
 
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Crea il tuo account",
-                style = MaterialTheme.typography.headlineMedium,
+                text = "SociusFit",
+                style = MaterialTheme.typography.displaySmall,
                 color = MaterialTheme.colorScheme.primary
             )
 
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraSmall))
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "Crea il tuo account",
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
 
             Text(
                 text = "Inizia a trovare il tuo partner sportivo",
@@ -103,8 +120,9 @@ fun RegisterScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
+            Spacer(modifier = Modifier.height(48.dp))
 
+            // Form di registrazione
             SFTextField(
                 value = name,
                 onValueChange = viewModel::onNameChange,
@@ -120,7 +138,7 @@ fun RegisterScreen(
                 )
             )
 
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+            Spacer(modifier = Modifier.height(16.dp))
 
             SFTextField(
                 value = email,
@@ -137,7 +155,7 @@ fun RegisterScreen(
                 )
             )
 
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+            Spacer(modifier = Modifier.height(16.dp))
 
             SFPasswordTextField(
                 value = password,
@@ -151,7 +169,7 @@ fun RegisterScreen(
                 )
             )
 
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+            Spacer(modifier = Modifier.height(16.dp))
 
             SFPasswordTextField(
                 value = confirmPassword,
@@ -168,7 +186,7 @@ fun RegisterScreen(
                 )
             )
 
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
+            Spacer(modifier = Modifier.height(32.dp))
 
             SFButton(
                 text = "Registrati",
@@ -177,14 +195,85 @@ fun RegisterScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            TextButton(
-                onClick = { navController.popBackStack() },
-                enabled = !uiState.isLoading
+            // Divider con "oppure"
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Hai già un account? Accedi")
+                HorizontalDivider(modifier = Modifier.weight(1f))
+                Text(
+                    text = "  oppure  ",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                HorizontalDivider(modifier = Modifier.weight(1f))
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Social login buttons
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp)
+            ) {
+                // Google login
+                OutlinedButton(
+                    onClick = { /* TODO: Implementare Google Sign In */ },
+                    modifier = Modifier.weight(1f),
+                    enabled = !uiState.isLoading
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.google_logo),
+                        contentDescription = "Google logo",
+                        modifier = Modifier.size(20.dp),
+                        tint = androidx.compose.ui.graphics.Color.Unspecified
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Google")
+                }
+
+                // Apple login
+                OutlinedButton(
+                    onClick = { /* TODO: Implementare Apple Sign In */ },
+                    modifier = Modifier.weight(1f),
+                    enabled = !uiState.isLoading
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.apple_logo),
+                        contentDescription = "Apple logo",
+                        modifier = Modifier.size(20.dp),
+                        tint = androidx.compose.ui.graphics.Color.Unspecified
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Apple")
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Link login
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Hai già un account?",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                TextButton(
+                    onClick = { navController.popBackStack() },
+                    enabled = !uiState.isLoading
+                ) {
+                    Text(
+                        text = "Accedi",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
         }
 
         if (uiState.isLoading) {
