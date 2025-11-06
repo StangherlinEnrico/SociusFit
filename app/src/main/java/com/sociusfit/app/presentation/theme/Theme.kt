@@ -10,14 +10,10 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-/**
- * Schema colori tema chiaro
- */
 private val LightColorScheme = lightColorScheme(
     primary = Primary,
     onPrimary = OnPrimary,
@@ -45,9 +41,6 @@ private val LightColorScheme = lightColorScheme(
     outlineVariant = OutlineVariant
 )
 
-/**
- * Schema colori tema scuro
- */
 private val DarkColorScheme = darkColorScheme(
     primary = DarkPrimary,
     onPrimary = DarkOnPrimary,
@@ -75,13 +68,6 @@ private val DarkColorScheme = darkColorScheme(
     outlineVariant = DarkOutlineVariant
 )
 
-/**
- * Theme principale di SociusFit
- *
- * @param darkTheme Se true, usa il tema scuro
- * @param dynamicColor Se true (e supportato), usa i colori dinamici di Material You (Android 12+)
- * @param content Il contenuto da wrappare con il tema
- */
 @Composable
 fun SociusFitTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -89,12 +75,11 @@ fun SociusFitTheme(
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
-        // Dynamic color disponibile su Android 12+
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-        // Altrimenti usa i colori statici
+
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
@@ -103,7 +88,6 @@ fun SociusFitTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }

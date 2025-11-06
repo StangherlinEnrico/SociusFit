@@ -18,8 +18,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.sociusfit.app.presentation.components.SFLoadingIndicator
 import com.sociusfit.app.presentation.navigation.navigateToLogin
-import com.sociusfit.app.presentation.navigation.navigateToMatch
-import com.sociusfit.app.presentation.navigation.navigateToProfileSetup
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -32,8 +30,6 @@ fun SplashScreen(
     LaunchedEffect(destination) {
         when (destination) {
             is SplashDestination.Login -> navController.navigateToLogin()
-            is SplashDestination.ProfileSetup -> navController.navigateToProfileSetup()
-            is SplashDestination.Match -> navController.navigateToMatch()
             null -> {}
         }
     }

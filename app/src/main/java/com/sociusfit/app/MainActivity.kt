@@ -11,10 +11,6 @@ import androidx.navigation.compose.rememberNavController
 import com.sociusfit.app.presentation.navigation.SociusFitNavHost
 import com.sociusfit.app.presentation.theme.SociusFitTheme
 
-/**
- * Activity principale dell'applicazione SociusFit
- * Gestisce il setup del tema e della navigazione
- */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

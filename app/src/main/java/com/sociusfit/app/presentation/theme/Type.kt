@@ -6,11 +6,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-/**
- * Typography set basato su Material 3
- */
 val Typography = Typography(
-    // Display styles (titoli molto grandi)
     displayLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Normal,
@@ -33,7 +29,6 @@ val Typography = Typography(
         letterSpacing = 0.sp
     ),
 
-    // Headline styles (titoli sezioni)
     headlineLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.SemiBold,
@@ -56,7 +51,6 @@ val Typography = Typography(
         letterSpacing = 0.sp
     ),
 
-    // Title styles (titoli componenti)
     titleLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.SemiBold,
@@ -79,7 +73,6 @@ val Typography = Typography(
         letterSpacing = 0.1.sp
     ),
 
-    // Body styles (testo normale)
     bodyLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Normal,
@@ -102,7 +95,6 @@ val Typography = Typography(
         letterSpacing = 0.4.sp
     ),
 
-    // Label styles (etichette, pulsanti)
     labelLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.SemiBold,

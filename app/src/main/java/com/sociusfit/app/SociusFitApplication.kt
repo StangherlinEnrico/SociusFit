@@ -1,7 +1,6 @@
 package com.sociusfit.app
 
 import android.app.Application
-import com.sociusfit.app.di.*
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 import timber.log.Timber
@@ -15,14 +14,7 @@ class SociusFitApplication : Application() {
 
         startKoin {
             androidContext(this@SociusFitApplication)
-            modules(
-                networkModule,
-                dataStoreModule,
-                databaseModule,
-                repositoryModule,
-                useCaseModule,
-                viewModelModule
-            )
+            modules()
         }
 
         Timber.d("SociusFit Application started with Koin")

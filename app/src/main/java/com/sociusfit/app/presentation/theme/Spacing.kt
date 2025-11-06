@@ -7,9 +7,6 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-/**
- * Sistema di spaziature consistente basato su multipli di 4dp
- */
 data class Spacing(
     val extraSmall: Dp = 4.dp,
     val small: Dp = 8.dp,
@@ -19,14 +16,8 @@ data class Spacing(
     val huge: Dp = 48.dp
 )
 
-/**
- * CompositionLocal per accedere al sistema di spacing
- */
 val LocalSpacing = compositionLocalOf { Spacing() }
 
-/**
- * Extension per accedere facilmente allo spacing tramite MaterialTheme
- */
 val MaterialTheme.spacing: Spacing
     @Composable
     @ReadOnlyComposable
