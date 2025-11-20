@@ -23,15 +23,15 @@ fun SociusFitNavHost(
         }
 
         composable(Routes.LOGIN) {
-            // TODO: Implementare pagina di Login
+            com.sociusfit.app.presentation.auth.login.LoginScreen(navController = navController)
         }
 
         composable(Routes.REGISTER) {
-            // TODO: Implementare pagina di registrazione
+            com.sociusfit.app.presentation.auth.register.RegisterScreen(navController = navController)
         }
 
-        composable(Routes.PROFILE_SETUP) {
-            // TODO: Implementare ProfileSetupScreen
+        composable(Routes.FORGOT_PASSWORD) {
+            com.sociusfit.app.presentation.auth.forgotpassword.ForgotPasswordScreen(navController = navController)
         }
     }
 }
@@ -43,11 +43,13 @@ fun NavHostController.navigateToLogin() {
 }
 
 fun NavHostController.navigateToRegister() {
-    navigate(Routes.REGISTER)
+    navigate(Routes.REGISTER) {
+        popUpTo(Routes.SPLASH) { inclusive = true }
+    }
 }
 
-fun NavHostController.navigateToProfileSetup() {
-    navigate(Routes.PROFILE_SETUP) {
-        popUpTo(Routes.REGISTER) { inclusive = true }
+fun NavHostController.navigateToForgotPassword() {
+    navigate(Routes.FORGOT_PASSWORD) {
+        popUpTo(Routes.SPLASH) { inclusive = true }
     }
 }
