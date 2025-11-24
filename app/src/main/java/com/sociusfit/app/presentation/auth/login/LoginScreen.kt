@@ -19,6 +19,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.sociusfit.app.presentation.components.*
 import com.sociusfit.app.presentation.navigation.Routes
+import com.sociusfit.app.presentation.navigation.navigateToForgotPassword
+import com.sociusfit.app.presentation.navigation.navigateToRegister
 import com.sociusfit.app.presentation.theme.spacing
 import org.koin.androidx.compose.koinViewModel
 
@@ -134,8 +136,7 @@ fun LoginScreen(
                 SFTextButton(
                     text = "Password dimenticata?",
                     onClick = {
-                        // TODO: Navigare a ForgotPasswordScreen
-                        // navController.navigateToForgotPassword()
+                        navController.navigateToForgotPassword()
                     }
                 )
             }
@@ -192,8 +193,7 @@ fun LoginScreen(
                 SFTextButton(
                     text = "Registrati",
                     onClick = {
-                        // TODO: Navigare a RegisterScreen
-                        // navController.navigateToRegister()
+                        navController.navigateToRegister()
                     }
                 )
             }

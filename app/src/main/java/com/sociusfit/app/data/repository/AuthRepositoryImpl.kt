@@ -2,6 +2,7 @@ package com.sociusfit.app.data.repository
 
 import com.sociusfit.app.data.local.DataStoreManager
 import com.sociusfit.app.data.remote.api.AuthApiService
+import com.sociusfit.app.data.remote.api.ForgotPasswordRequestDto
 import com.sociusfit.app.data.remote.dto.auth.LoginRequestDto
 import com.sociusfit.app.data.remote.dto.auth.OAuthLoginRequestDto
 import com.sociusfit.app.data.remote.dto.auth.RegisterRequestDto
@@ -207,6 +208,28 @@ class AuthRepositoryImpl(
         } catch (e: Exception) {
             Timber.e(e, "Exception retrieving auth token")
             null
+        }
+    }
+
+    override suspend fun forgotPassword(email: String): Result<String> {
+        return try {
+            Timber.d("Requesting password reset for email: $email")
+
+            val request = ForgotPasswordRequestDto(email = email)
+            val response = authApiService.forgotPassword(request)
+
+            if (response.isSuccessful && response.body()?.success == true) {
+                val message = response.body()?.data ?: "Password reset email sent successfully"
+                Timber.i("Password reset email sent successfully")
+                Result.Success(message)
+            } else {
+                val errorMessage = response.body()?.message ?: "Failed to send password reset email"
+                Timber.w("Password reset request failed: $errorMessage")
+                Result.Error(errorMessage)
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Exception during password reset request")
+            Result.Error(e.message ?: "Network error occurred")
         }
     }
 }

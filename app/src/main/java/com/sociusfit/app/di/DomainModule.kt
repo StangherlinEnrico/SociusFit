@@ -1,6 +1,7 @@
 package com.sociusfit.app.di
 
 import com.sociusfit.app.domain.usecase.auth.CheckLoginStatusUseCase
+import com.sociusfit.app.domain.usecase.auth.ForgotPasswordUseCase
 import com.sociusfit.app.domain.usecase.auth.LoginUseCase
 import com.sociusfit.app.domain.usecase.auth.LoginWithOAuthUseCase
 import com.sociusfit.app.domain.usecase.auth.LogoutUseCase
@@ -21,6 +22,7 @@ val domainModule = module {
     factory { LoginUseCase(authRepository = get()) }
     factory { RegisterUseCase(authRepository = get()) }
     factory { LoginWithOAuthUseCase(authRepository = get()) }
+    factory { ForgotPasswordUseCase(authRepository = get()) }
     factory { LogoutUseCase(authRepository = get()) }
     factory { CheckLoginStatusUseCase(authRepository = get()) }
 

@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.sociusfit.app.presentation.components.*
 import com.sociusfit.app.presentation.theme.spacing
+import org.koin.androidx.compose.koinViewModel
 
 /**
  * Schermata per il recupero password dimenticata
@@ -27,20 +28,26 @@ import com.sociusfit.app.presentation.theme.spacing
  * - Navigazione back a login
  *
  * @param navController Controller per la navigazione
+ * @param viewModel ViewModel per gestire la logica
  */
 @Composable
 fun ForgotPasswordScreen(
-    navController: NavHostController
+    navController: NavHostController,
+    viewModel: ForgotPasswordViewModel = koinViewModel()
 ) {
-    // State per il campo email
-    var email by remember { mutableStateOf("") }
+    val uiState by viewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    // State per errore di validazione
-    var emailError by remember { mutableStateOf<String?>(null) }
-
-    // State per loading e successo
-    var isLoading by remember { mutableStateOf(false) }
-    var isEmailSent by remember { mutableStateOf(false) }
+    // Gestione errori generici
+    LaunchedEffect(uiState.error) {
+        uiState.error?.let { error ->
+            snackbarHostState.showSnackbar(
+                message = error,
+                duration = SnackbarDuration.Short
+            )
+            viewModel.clearError()
+        }
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -51,7 +58,8 @@ fun ForgotPasswordScreen(
                     navController.popBackStack()
                 }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -63,24 +71,19 @@ fun ForgotPasswordScreen(
         ) {
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.huge))
 
-            if (!isEmailSent) {
+            if (!uiState.isEmailSent) {
                 // Schermata di richiesta reset
                 ResetPasswordRequestContent(
-                    email = email,
-                    emailError = emailError,
-                    isLoading = isLoading,
-                    onEmailChange = {
-                        email = it
-                        emailError = null
-                    },
-                    onSendClick = {
-                        // TODO: Implementare logica invio email reset
-                    }
+                    email = uiState.email,
+                    emailError = uiState.emailError,
+                    isLoading = uiState.isLoading,
+                    onEmailChange = viewModel::onEmailChanged,
+                    onSendClick = viewModel::onSendClick
                 )
             } else {
                 // Schermata di conferma invio
                 EmailSentConfirmationContent(
-                    email = email,
+                    email = uiState.email,
                     onBackToLoginClick = {
                         navController.popBackStack()
                     }

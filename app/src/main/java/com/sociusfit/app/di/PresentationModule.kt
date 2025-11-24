@@ -1,5 +1,6 @@
 package com.sociusfit.app.di
 
+import com.sociusfit.app.presentation.auth.forgotpassword.ForgotPasswordViewModel
 import com.sociusfit.app.presentation.auth.login.LoginViewModel
 import com.sociusfit.app.presentation.auth.register.RegisterViewModel
 import com.sociusfit.app.presentation.profile.ProfileViewModel
@@ -32,6 +33,13 @@ val presentationModule = module {
         RegisterViewModel(
             registerUseCase = get(),
             loginWithOAuthUseCase = get()
+        )
+    }
+
+    // Forgot Password ViewModel
+    viewModel {
+        ForgotPasswordViewModel(
+            forgotPasswordUseCase = get()
         )
     }
 

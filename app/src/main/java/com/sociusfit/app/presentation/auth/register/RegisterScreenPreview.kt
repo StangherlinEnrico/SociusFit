@@ -33,6 +33,10 @@ private class MockAuthRepository : AuthRepository {
         ))
     }
 
+    override suspend fun forgotPassword(email: String): Result<String> {
+        return Result.Success("Password reset email sent successfully to $email")
+    }
+
     override suspend fun register(
         firstName: String,
         lastName: String,

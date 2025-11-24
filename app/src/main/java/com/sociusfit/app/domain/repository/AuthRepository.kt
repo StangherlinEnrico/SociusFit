@@ -44,6 +44,13 @@ interface AuthRepository {
     ): Result<AuthResponse>
 
     /**
+     * Request password reset email
+     * @param email User email to send reset link
+     * @return Result with success message or error
+     */
+    suspend fun forgotPassword(email: String): Result<String>
+
+    /**
      * Logout current user
      * Clears local session data
      */
