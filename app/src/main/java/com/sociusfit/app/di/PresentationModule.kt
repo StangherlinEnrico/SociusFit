@@ -1,5 +1,8 @@
 package com.sociusfit.app.di
 
+import com.sociusfit.app.presentation.auth.login.LoginViewModel
+import com.sociusfit.app.presentation.auth.register.RegisterViewModel
+import com.sociusfit.app.presentation.profile.ProfileViewModel
 import com.sociusfit.app.presentation.splash.SplashViewModel
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
@@ -10,5 +13,32 @@ import org.koin.dsl.module
 val presentationModule = module {
 
     // Splash ViewModel
-    viewModel { SplashViewModel() }
+    viewModel {
+        SplashViewModel(
+            checkLoginStatusUseCase = get()
+        )
+    }
+
+    // Login ViewModel
+    viewModel {
+        LoginViewModel(
+            loginUseCase = get(),
+            loginWithOAuthUseCase = get()
+        )
+    }
+
+    // Register ViewModel
+    viewModel {
+        RegisterViewModel(
+            registerUseCase = get(),
+            loginWithOAuthUseCase = get()
+        )
+    }
+
+    // Profile ViewModel
+    viewModel {
+        ProfileViewModel(
+            getCurrentUserUseCase = get()
+        )
+    }
 }

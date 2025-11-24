@@ -14,10 +14,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.sociusfit.app.presentation.components.SFLoadingIndicator
-import com.sociusfit.app.presentation.navigation.navigateToLogin
+import com.sociusfit.app.presentation.navigation.Routes
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -29,7 +30,16 @@ fun SplashScreen(
 
     LaunchedEffect(destination) {
         when (destination) {
-            is SplashDestination.Login -> navController.navigateToLogin()
+            is SplashDestination.Login -> {
+                navController.navigate(Routes.LOGIN) {
+                    popUpTo(Routes.SPLASH) { inclusive = true }
+                }
+            }
+            is SplashDestination.Profile -> {
+                navController.navigate(Routes.PROFILE) {
+                    popUpTo(Routes.SPLASH) { inclusive = true }
+                }
+            }
             null -> {}
         }
     }
@@ -45,7 +55,8 @@ fun SplashScreen(
             Text(
                 text = "SociusFit",
                 style = MaterialTheme.typography.displayLarge,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold
             )
 
             Spacer(modifier = Modifier.height(16.dp))

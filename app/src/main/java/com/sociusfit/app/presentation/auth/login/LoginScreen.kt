@@ -2,7 +2,6 @@ package com.sociusfit.app.presentation.auth.login
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -19,39 +18,54 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.sociusfit.app.presentation.components.*
-import com.sociusfit.app.presentation.navigation.navigateToForgotPassword
-import com.sociusfit.app.presentation.navigation.navigateToRegister
+import com.sociusfit.app.presentation.navigation.Routes
 import com.sociusfit.app.presentation.theme.spacing
+import org.koin.androidx.compose.koinViewModel
 
 /**
  * Schermata di Login di SociusFit
  *
  * Features:
  * - Login con email e password
- * - Pulsanti OAuth (Google, Facebook, Apple)
+ * - Pulsanti OAuth (Google, Apple)
  * - Link a registrazione
  * - Link "Password dimenticata"
  * - Validazione visuale campi
  *
  * @param navController Controller per la navigazione
+ * @param viewModel ViewModel per gestire la logica
  */
 @Composable
 fun LoginScreen(
-    navController: NavHostController
+    navController: NavHostController,
+    viewModel: LoginViewModel = koinViewModel()
 ) {
-    // State per i campi
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    val uiState by viewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    // State per errori di validazione
-    var emailError by remember { mutableStateOf<String?>(null) }
-    var passwordError by remember { mutableStateOf<String?>(null) }
+    // Gestione successo login
+    LaunchedEffect(uiState.isLoginSuccessful) {
+        if (uiState.isLoginSuccessful) {
+            navController.navigate(Routes.PROFILE) {
+                popUpTo(0) { inclusive = true }
+            }
+        }
+    }
 
-    // State per loading
-    var isLoading by remember { mutableStateOf(false) }
+    // Gestione errori generici
+    LaunchedEffect(uiState.error) {
+        uiState.error?.let { error ->
+            snackbarHostState.showSnackbar(
+                message = error,
+                duration = SnackbarDuration.Short
+            )
+            viewModel.clearError()
+        }
+    }
 
     Scaffold(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -84,19 +98,16 @@ fun LoginScreen(
 
             // Email field
             SFTextField(
-                value = email,
-                onValueChange = {
-                    email = it
-                    emailError = null // Reset errore quando l'utente digita
-                },
+                value = uiState.email,
+                onValueChange = viewModel::onEmailChanged,
                 label = "Email",
                 placeholder = "esempio@email.com",
                 leadingIcon = Icons.Default.Email,
-                isError = emailError != null,
-                errorMessage = emailError,
+                isError = uiState.emailError != null,
+                errorMessage = uiState.emailError,
                 keyboardType = androidx.compose.ui.text.input.KeyboardType.Email,
                 imeAction = ImeAction.Next,
-                enabled = !isLoading,
+                enabled = !uiState.isLoading,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -104,14 +115,11 @@ fun LoginScreen(
 
             // Password field
             SFPasswordTextField(
-                value = password,
-                onValueChange = {
-                    password = it
-                    passwordError = null // Reset errore quando l'utente digita
-                },
+                value = uiState.password,
+                onValueChange = viewModel::onPasswordChanged,
                 label = "Password",
-                isError = passwordError != null,
-                errorMessage = passwordError,
+                isError = uiState.passwordError != null,
+                errorMessage = uiState.passwordError,
                 imeAction = ImeAction.Done,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -126,7 +134,8 @@ fun LoginScreen(
                 SFTextButton(
                     text = "Password dimenticata?",
                     onClick = {
-                        navController.navigateToForgotPassword()
+                        // TODO: Navigare a ForgotPasswordScreen
+                        // navController.navigateToForgotPassword()
                     }
                 )
             }
@@ -135,11 +144,9 @@ fun LoginScreen(
 
             // Pulsante Login
             SFButton(
-                text = if (isLoading) "Accesso in corso..." else "Accedi",
-                onClick = {
-                    // TODO: Implementare logica di login
-                },
-                enabled = !isLoading,
+                text = if (uiState.isLoading) "Accesso in corso..." else "Accedi",
+                onClick = viewModel::onLoginClick,
+                enabled = !uiState.isLoading,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -164,13 +171,9 @@ fun LoginScreen(
 
             // Pulsanti OAuth
             OAuthButtonsSection(
-                isLoading = isLoading,
-                onGoogleClick = {
-                    // TODO: Implementare Google Sign-In
-                },
-                onAppleClick = {
-                    // TODO: Implementare Apple Sign-In
-                }
+                isLoading = uiState.isLoading,
+                onGoogleClick = viewModel::onGoogleSignInClick,
+                onAppleClick = viewModel::onAppleSignInClick
             )
 
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraLarge))
@@ -189,7 +192,8 @@ fun LoginScreen(
                 SFTextButton(
                     text = "Registrati",
                     onClick = {
-                        navController.navigateToRegister()
+                        // TODO: Navigare a RegisterScreen
+                        // navController.navigateToRegister()
                     }
                 )
             }

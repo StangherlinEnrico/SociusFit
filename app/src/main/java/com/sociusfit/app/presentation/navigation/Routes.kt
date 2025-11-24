@@ -5,6 +5,7 @@ object Routes {
     const val LOGIN = "login"
     const val REGISTER = "register"
     const val FORGOT_PASSWORD = "forgot_password"
+    const val PROFILE = "profile"
 }
 
 sealed class NavigationDestination(val route: String) {
@@ -12,4 +13,5 @@ sealed class NavigationDestination(val route: String) {
     object Login : NavigationDestination(Routes.LOGIN)
     object Register : NavigationDestination(Routes.REGISTER)
     object ForgotPassword : NavigationDestination(Routes.FORGOT_PASSWORD)
+    object Profile : NavigationDestination(Routes.PROFILE)
 }

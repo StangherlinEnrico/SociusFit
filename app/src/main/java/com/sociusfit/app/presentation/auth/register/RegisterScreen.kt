@@ -19,7 +19,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.sociusfit.app.presentation.components.*
+import com.sociusfit.app.presentation.navigation.Routes
 import com.sociusfit.app.presentation.theme.spacing
+import org.koin.androidx.compose.koinViewModel
 
 /**
  * Schermata di Registrazione di SociusFit
@@ -32,30 +34,39 @@ import com.sociusfit.app.presentation.theme.spacing
  * - Validazione visuale campi
  *
  * @param navController Controller per la navigazione
+ * @param viewModel ViewModel per gestire la logica
  */
 @Composable
 fun RegisterScreen(
-    navController: NavHostController
+    navController: NavHostController,
+    viewModel: RegisterViewModel = koinViewModel()
 ) {
-    // State per i campi
-    var firstName by remember { mutableStateOf("") }
-    var lastName by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
+    val uiState by viewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    // State per errori di validazione
-    var firstNameError by remember { mutableStateOf<String?>(null) }
-    var lastNameError by remember { mutableStateOf<String?>(null) }
-    var emailError by remember { mutableStateOf<String?>(null) }
-    var passwordError by remember { mutableStateOf<String?>(null) }
-    var confirmPasswordError by remember { mutableStateOf<String?>(null) }
+    // Gestione successo registrazione
+    LaunchedEffect(uiState.isRegistrationSuccessful) {
+        if (uiState.isRegistrationSuccessful) {
+            navController.navigate(Routes.PROFILE) {
+                popUpTo(0) { inclusive = true }
+            }
+        }
+    }
 
-    // State per loading
-    var isLoading by remember { mutableStateOf(false) }
+    // Gestione errori generici
+    LaunchedEffect(uiState.error) {
+        uiState.error?.let { error ->
+            snackbarHostState.showSnackbar(
+                message = error,
+                duration = SnackbarDuration.Short
+            )
+            viewModel.clearError()
+        }
+    }
 
     Scaffold(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -89,19 +100,16 @@ fun RegisterScreen(
 
             // Nome field
             SFTextField(
-                value = firstName,
-                onValueChange = {
-                    firstName = it
-                    firstNameError = null
-                },
+                value = uiState.firstName,
+                onValueChange = viewModel::onFirstNameChanged,
                 label = "Nome",
                 placeholder = "Mario",
                 leadingIcon = Icons.Default.Person,
-                isError = firstNameError != null,
-                errorMessage = firstNameError,
+                isError = uiState.firstNameError != null,
+                errorMessage = uiState.firstNameError,
                 keyboardType = androidx.compose.ui.text.input.KeyboardType.Text,
                 imeAction = ImeAction.Next,
-                enabled = !isLoading,
+                enabled = !uiState.isLoading,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -109,19 +117,16 @@ fun RegisterScreen(
 
             // Cognome field
             SFTextField(
-                value = lastName,
-                onValueChange = {
-                    lastName = it
-                    lastNameError = null
-                },
+                value = uiState.lastName,
+                onValueChange = viewModel::onLastNameChanged,
                 label = "Cognome",
                 placeholder = "Rossi",
                 leadingIcon = Icons.Default.Person,
-                isError = lastNameError != null,
-                errorMessage = lastNameError,
+                isError = uiState.lastNameError != null,
+                errorMessage = uiState.lastNameError,
                 keyboardType = androidx.compose.ui.text.input.KeyboardType.Text,
                 imeAction = ImeAction.Next,
-                enabled = !isLoading,
+                enabled = !uiState.isLoading,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -129,19 +134,16 @@ fun RegisterScreen(
 
             // Email field
             SFTextField(
-                value = email,
-                onValueChange = {
-                    email = it
-                    emailError = null
-                },
+                value = uiState.email,
+                onValueChange = viewModel::onEmailChanged,
                 label = "Email",
                 placeholder = "esempio@email.com",
                 leadingIcon = Icons.Default.Email,
-                isError = emailError != null,
-                errorMessage = emailError,
+                isError = uiState.emailError != null,
+                errorMessage = uiState.emailError,
                 keyboardType = androidx.compose.ui.text.input.KeyboardType.Email,
                 imeAction = ImeAction.Next,
-                enabled = !isLoading,
+                enabled = !uiState.isLoading,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -149,14 +151,11 @@ fun RegisterScreen(
 
             // Password field
             SFPasswordTextField(
-                value = password,
-                onValueChange = {
-                    password = it
-                    passwordError = null
-                },
+                value = uiState.password,
+                onValueChange = viewModel::onPasswordChanged,
                 label = "Password",
-                isError = passwordError != null,
-                errorMessage = passwordError,
+                isError = uiState.passwordError != null,
+                errorMessage = uiState.passwordError,
                 imeAction = ImeAction.Next,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -165,14 +164,11 @@ fun RegisterScreen(
 
             // Conferma Password field
             SFPasswordTextField(
-                value = confirmPassword,
-                onValueChange = {
-                    confirmPassword = it
-                    confirmPasswordError = null
-                },
+                value = uiState.confirmPassword,
+                onValueChange = viewModel::onConfirmPasswordChanged,
                 label = "Conferma Password",
-                isError = confirmPasswordError != null,
-                errorMessage = confirmPasswordError,
+                isError = uiState.confirmPasswordError != null,
+                errorMessage = uiState.confirmPasswordError,
                 imeAction = ImeAction.Done,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -181,11 +177,9 @@ fun RegisterScreen(
 
             // Pulsante Registrati
             SFButton(
-                text = if (isLoading) "Registrazione in corso..." else "Registrati",
-                onClick = {
-                    // TODO: Implementare logica di registrazione
-                },
-                enabled = !isLoading,
+                text = if (uiState.isLoading) "Registrazione in corso..." else "Registrati",
+                onClick = viewModel::onRegisterClick,
+                enabled = !uiState.isLoading,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -210,13 +204,9 @@ fun RegisterScreen(
 
             // Pulsanti OAuth
             OAuthButtonsSection(
-                isLoading = isLoading,
-                onGoogleClick = {
-                    // TODO: Implementare Google Sign-In
-                },
-                onAppleClick = {
-                    // TODO: Implementare Apple Sign-In
-                }
+                isLoading = uiState.isLoading,
+                onGoogleClick = viewModel::onGoogleSignInClick,
+                onAppleClick = viewModel::onAppleSignInClick
             )
 
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraLarge))

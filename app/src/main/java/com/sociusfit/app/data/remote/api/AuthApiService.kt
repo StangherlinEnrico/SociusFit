@@ -11,34 +11,58 @@ import retrofit2.http.POST
 
 /**
  * Retrofit API service for authentication endpoints
- * Base path: /api/v1/users
+ * Base path: /api/v1/auth
  */
 interface AuthApiService {
 
     /**
      * Register a new user
-     * POST /api/v1/users/register
+     * POST /api/v1/auth/register
      */
-    @POST("api/v1/users/register")
+    @POST("api/v1/auth/register")
     suspend fun register(
         @Body request: RegisterRequestDto
     ): Response<ApiResult<AuthResponseDto>>
 
     /**
      * Login with email and password
-     * POST /api/v1/users/login
+     * POST /api/v1/auth/login
      */
-    @POST("api/v1/users/login")
+    @POST("api/v1/auth/login")
     suspend fun login(
         @Body request: LoginRequestDto
     ): Response<ApiResult<AuthResponseDto>>
 
     /**
-     * Login with OAuth provider (Google, Facebook, Microsoft, Apple)
-     * POST /api/v1/users/login/oauth
+     * Login with OAuth provider (Google, Apple)
+     * POST /api/v1/auth/login/oauth
      */
-    @POST("api/v1/users/login/oauth")
+    @POST("api/v1/auth/login/oauth")
     suspend fun loginWithOAuth(
         @Body request: OAuthLoginRequestDto
     ): Response<ApiResult<AuthResponseDto>>
+
+    /**
+     * Request password reset
+     * POST /api/v1/auth/forgot-password
+     */
+    @POST("api/v1/auth/forgot-password")
+    suspend fun forgotPassword(
+        @Body request: ForgotPasswordRequestDto
+    ): Response<ApiResult<String>>
+
+    /**
+     * Logout user (revoke all refresh tokens)
+     * POST /api/v1/auth/logout
+     * Requires authentication
+     */
+    @POST("api/v1/auth/logout")
+    suspend fun logout(): Response<ApiResult<Unit>>
 }
+
+/**
+ * Request DTO for forgot password
+ */
+data class ForgotPasswordRequestDto(
+    val email: String
+)

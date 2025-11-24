@@ -6,6 +6,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.sociusfit.app.presentation.auth.forgotpassword.ForgotPasswordScreen
+import com.sociusfit.app.presentation.auth.login.LoginScreen
+import com.sociusfit.app.presentation.auth.register.RegisterScreen
+import com.sociusfit.app.presentation.profile.ProfileScreen
+import com.sociusfit.app.presentation.splash.SplashScreen
 
 @Composable
 fun SociusFitNavHost(
@@ -19,19 +24,23 @@ fun SociusFitNavHost(
         modifier = modifier
     ) {
         composable(Routes.SPLASH) {
-            com.sociusfit.app.presentation.splash.SplashScreen(navController = navController)
+            SplashScreen(navController = navController)
         }
 
         composable(Routes.LOGIN) {
-            com.sociusfit.app.presentation.auth.login.LoginScreen(navController = navController)
+            LoginScreen(navController = navController)
         }
 
         composable(Routes.REGISTER) {
-            com.sociusfit.app.presentation.auth.register.RegisterScreen(navController = navController)
+            RegisterScreen(navController = navController)
         }
 
         composable(Routes.FORGOT_PASSWORD) {
-            com.sociusfit.app.presentation.auth.forgotpassword.ForgotPasswordScreen(navController = navController)
+            ForgotPasswordScreen(navController = navController)
+        }
+
+        composable(Routes.PROFILE) {
+            ProfileScreen(navController = navController)
         }
     }
 }
@@ -43,13 +52,15 @@ fun NavHostController.navigateToLogin() {
 }
 
 fun NavHostController.navigateToRegister() {
-    navigate(Routes.REGISTER) {
-        popUpTo(Routes.SPLASH) { inclusive = true }
-    }
+    navigate(Routes.REGISTER)
 }
 
 fun NavHostController.navigateToForgotPassword() {
-    navigate(Routes.FORGOT_PASSWORD) {
-        popUpTo(Routes.SPLASH) { inclusive = true }
+    navigate(Routes.FORGOT_PASSWORD)
+}
+
+fun NavHostController.navigateToProfile() {
+    navigate(Routes.PROFILE) {
+        popUpTo(0) { inclusive = true }
     }
 }
