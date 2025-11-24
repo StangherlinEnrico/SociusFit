@@ -1,5 +1,6 @@
 package com.sociusfit.app.di
 
+import android.os.Build
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.sociusfit.app.data.remote.adapter.LocalDateTimeAdapter
@@ -76,6 +77,17 @@ val networkModule = module {
  * TODO: Replace with actual production URL
  */
 private fun getBaseUrl(): String {
-    return "http://10.0.2.2:5000/" // Android emulator localhost
+    return if (isEmulator()) {
+        "http://10.0.2.2:5000/"      // Emulator
+    } else {
+        "http://192.168.1.3:5000/"   // Physical device | Bisogna aprire la porta 5000 dal firewall
+    }
+
     // Production: return "https://api.sociusfit.com/"
+}
+
+private fun isEmulator(): Boolean {
+    return (Build.FINGERPRINT.startsWith("generic")
+            || Build.MODEL.contains("Emulator")
+            || Build.MANUFACTURER.contains("Genymotion"))
 }

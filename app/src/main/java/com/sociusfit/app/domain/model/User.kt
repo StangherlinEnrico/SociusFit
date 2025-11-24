@@ -13,8 +13,6 @@ data class User(
     val isEmailVerified: Boolean,
     val provider: String? = null,
     val location: String? = null,
-    val latitude: Double? = null,
-    val longitude: Double? = null,
     val maxDistanceKm: Int? = null,
     val createdAt: LocalDateTime
 ) {
@@ -29,5 +27,5 @@ data class User(
     /**
      * Check if user has set location preferences
      */
-    fun hasLocationSet(): Boolean = latitude != null && longitude != null
+    fun hasLocationSet(): Boolean = location != null
 }

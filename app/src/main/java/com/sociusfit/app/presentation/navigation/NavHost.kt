@@ -10,6 +10,7 @@ import com.sociusfit.app.presentation.auth.forgotpassword.ForgotPasswordScreen
 import com.sociusfit.app.presentation.auth.login.LoginScreen
 import com.sociusfit.app.presentation.auth.register.RegisterScreen
 import com.sociusfit.app.presentation.profile.ProfileScreen
+import com.sociusfit.app.presentation.profile.edit.EditProfileScreen
 import com.sociusfit.app.presentation.splash.SplashScreen
 
 @Composable
@@ -41,6 +42,10 @@ fun SociusFitNavHost(
 
         composable(Routes.PROFILE) {
             ProfileScreen(navController = navController)
+        }
+
+        composable(Routes.EDIT_PROFILE) {
+            EditProfileScreen(navController = navController)
         }
     }
 }

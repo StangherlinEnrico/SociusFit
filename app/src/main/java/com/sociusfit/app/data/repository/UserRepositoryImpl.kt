@@ -52,19 +52,22 @@ class UserRepositoryImpl(
 
     override suspend fun getCurrentUser(): Result<User> {
         return try {
-            // Get current user ID from DataStore
-            val userId = dataStoreManager.userId.first()
+            Timber.d("Getting current user profile")
+            val response = userApiService.getCurrentUser()
 
-            if (userId == null) {
-                Timber.w("No user ID found in DataStore")
-                return Result.Error("User not logged in")
+            if (response.isSuccessful && response.body()?.success == true) {
+                val userDto = response.body()!!.data!!
+                val user = UserMapper.toDomain(userDto)
+                Timber.i("Current user profile loaded successfully")
+                Result.Success(user)
+            } else {
+                val errorMessage = response.body()?.message ?: "Failed to load user profile"
+                Timber.w("Get current user failed: $errorMessage")
+                Result.Error(errorMessage)
             }
-
-            Timber.d("Fetching current user: $userId")
-            getUserById(userId)
         } catch (e: Exception) {
-            Timber.e(e, "Exception fetching current user")
-            Result.Error(e.message ?: "Failed to get current user")
+            Timber.e(e, "Exception during get current user")
+            Result.Error(e.message ?: "Network error occurred")
         }
     }
 

@@ -4,6 +4,7 @@ import com.sociusfit.app.presentation.auth.forgotpassword.ForgotPasswordViewMode
 import com.sociusfit.app.presentation.auth.login.LoginViewModel
 import com.sociusfit.app.presentation.auth.register.RegisterViewModel
 import com.sociusfit.app.presentation.profile.ProfileViewModel
+import com.sociusfit.app.presentation.profile.edit.EditProfileViewModel
 import com.sociusfit.app.presentation.splash.SplashViewModel
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
@@ -47,6 +48,15 @@ val presentationModule = module {
     viewModel {
         ProfileViewModel(
             getCurrentUserUseCase = get()
+        )
+    }
+
+    // Edit Profile ViewModel
+    viewModel {
+        EditProfileViewModel(
+            getCurrentUserUseCase = get(),
+            updateProfileUseCase = get(),
+            searchMunicipalitiesUseCase = get()
         )
     }
 }

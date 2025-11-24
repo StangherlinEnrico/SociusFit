@@ -1,15 +1,8 @@
 package com.sociusfit.app.di
 
-import com.sociusfit.app.domain.usecase.auth.CheckLoginStatusUseCase
-import com.sociusfit.app.domain.usecase.auth.ForgotPasswordUseCase
-import com.sociusfit.app.domain.usecase.auth.LoginUseCase
-import com.sociusfit.app.domain.usecase.auth.LoginWithOAuthUseCase
-import com.sociusfit.app.domain.usecase.auth.LogoutUseCase
-import com.sociusfit.app.domain.usecase.auth.RegisterUseCase
-import com.sociusfit.app.domain.usecase.user.DeleteAccountUseCase
-import com.sociusfit.app.domain.usecase.user.GetCurrentUserUseCase
-import com.sociusfit.app.domain.usecase.user.UpdateLocationUseCase
-import com.sociusfit.app.domain.usecase.user.UpdateProfileUseCase
+import com.sociusfit.app.domain.usecase.auth.*
+import com.sociusfit.app.domain.usecase.location.*
+import com.sociusfit.app.domain.usecase.user.*
 import org.koin.dsl.module
 
 /**
@@ -31,4 +24,9 @@ val domainModule = module {
     factory { UpdateProfileUseCase(userRepository = get()) }
     factory { UpdateLocationUseCase(userRepository = get()) }
     factory { DeleteAccountUseCase(userRepository = get()) }
+
+    // Location Use Cases
+    factory { GetAllRegionsUseCase(locationRepository = get()) }
+    factory { SearchMunicipalitiesUseCase(locationRepository = get()) }
+    factory { GetMunicipalitiesByRegionUseCase(locationRepository = get()) }
 }

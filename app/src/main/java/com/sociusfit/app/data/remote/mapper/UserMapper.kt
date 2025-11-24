@@ -24,8 +24,6 @@ object UserMapper {
             isEmailVerified = dto.isEmailVerified,
             provider = dto.provider,
             location = dto.location,
-            latitude = dto.latitude,
-            longitude = dto.longitude,
             maxDistanceKm = dto.maxDistanceKm,
             createdAt = parseDateTime(dto.createdAt)
         )

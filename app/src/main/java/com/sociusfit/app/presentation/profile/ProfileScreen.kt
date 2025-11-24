@@ -7,7 +7,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -15,12 +17,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.sociusfit.app.presentation.components.SFLoadingIndicator
+import com.sociusfit.app.presentation.navigation.Routes
 import com.sociusfit.app.presentation.theme.spacing
+import com.sociusfit.app.utils.StringUtils
 import org.koin.androidx.compose.koinViewModel
 
 /**
@@ -30,11 +33,14 @@ import org.koin.androidx.compose.koinViewModel
  * - Immagine profilo con gradiente
  * - Informazioni utente in card
  * - Email e verifica
+ * - Location e distanza massima
+ * - Settings icon per modifica profilo
  * - Design moderno Material 3
  *
  * @param navController Controller per la navigazione
  * @param viewModel ViewModel per gestire la logica
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     navController: NavHostController,
@@ -43,7 +49,29 @@ fun ProfileScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
+        topBar = {
+            if (uiState.user != null) {
+                TopAppBar(
+                    title = { Text("Profilo") },
+                    actions = {
+                        IconButton(onClick = {
+                            navController.navigate(Routes.EDIT_PROFILE)
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Settings,
+                                contentDescription = "Modifica profilo"
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                        actionIconContentColor = MaterialTheme.colorScheme.onPrimary
+                    )
+                )
+            }
+        }
     ) { paddingValues ->
         when {
             uiState.isLoading -> {
@@ -65,6 +93,8 @@ fun ProfileScreen(
                     email = uiState.user!!.email,
                     isEmailVerified = uiState.user!!.isEmailVerified,
                     provider = uiState.user!!.provider,
+                    location = uiState.location,
+                    maxDistance = uiState.maxDistance,
                     modifier = Modifier.padding(paddingValues)
                 )
             }
@@ -82,6 +112,8 @@ private fun ProfileContent(
     email: String,
     isEmailVerified: Boolean,
     provider: String?,
+    location: String?,
+    maxDistance: Int?,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -93,7 +125,7 @@ private fun ProfileContent(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(280.dp)
+                .height(240.dp)
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
@@ -209,7 +241,7 @@ private fun ProfileContent(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = email,
+                            text = StringUtils.maskEmail(email),
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onSurface
@@ -230,30 +262,67 @@ private fun ProfileContent(
 
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 
-            // Card Benvenuto
-            Card(
+            // Card Location
+            ElevatedCard(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                elevation = CardDefaults.elevatedCardElevation(
+                    defaultElevation = 2.dp
                 )
             ) {
-                Column(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(MaterialTheme.spacing.medium)
+                        .padding(MaterialTheme.spacing.medium),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "🎉 Benvenuto su SociusFit!",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                    Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
-                    Text(
-                        text = "Inizia a trovare il tuo partner sportivo ideale e organizza sessioni di allenamento nella tua zona.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
-                    )
+                    // Icon container
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.tertiaryContainer,
+                        modifier = Modifier.size(48.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Default.LocationOn,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onTertiaryContainer,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(MaterialTheme.spacing.medium))
+
+                    // Location text
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Località",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        if (location != null) {
+                            Text(
+                                text = location,
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            if (maxDistance != null) {
+                                Text(
+                                    text = "Entro $maxDistance km",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        } else {
+                            Text(
+                                text = "Non impostata",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                            )
+                        }
+                    }
                 }
             }
 
@@ -264,17 +333,17 @@ private fun ProfileContent(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium)
             ) {
-                StatCard(
+                ProfileStatCard(
                     title = "Sessioni",
                     value = "0",
                     modifier = Modifier.weight(1f)
                 )
-                StatCard(
+                ProfileStatCard(
                     title = "Partner",
                     value = "0",
                     modifier = Modifier.weight(1f)
                 )
-                StatCard(
+                ProfileStatCard(
                     title = "Sport",
                     value = "0",
                     modifier = Modifier.weight(1f)
@@ -288,7 +357,7 @@ private fun ProfileContent(
  * Card per statistiche
  */
 @Composable
-private fun StatCard(
+private fun ProfileStatCard(
     title: String,
     value: String,
     modifier: Modifier = Modifier
