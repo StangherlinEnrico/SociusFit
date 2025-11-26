@@ -8,7 +8,6 @@ import com.sociusfit.app.data.remote.mapper.UserMapper
 import com.sociusfit.app.domain.model.Result
 import com.sociusfit.app.domain.model.User
 import com.sociusfit.app.domain.repository.UserRepository
-import kotlinx.coroutines.flow.first
 import timber.log.Timber
 
 /**
@@ -74,7 +73,8 @@ class UserRepositoryImpl(
     override suspend fun updateProfile(
         firstName: String,
         lastName: String,
-        location: String?
+        location: String?,
+        maxDistance: Int
     ): Result<User> {
         return try {
             Timber.d("Updating user profile")
@@ -122,16 +122,16 @@ class UserRepositoryImpl(
     override suspend fun updateLocation(
         latitude: Double,
         longitude: Double,
-        maxDistanceKm: Int
+        maxDistance: Int
     ): Result<User> {
         return try {
-            Timber.d("Updating user location: lat=$latitude, lon=$longitude, maxDistance=$maxDistanceKm")
+            Timber.d("Updating user location: lat=$latitude, lon=$longitude, maxDistance=$maxDistance")
 
             val response = userApiService.updateLocation(
                 UpdateLocationRequest(
                     latitude = latitude,
                     longitude = longitude,
-                    maxDistanceKm = maxDistanceKm
+                    maxDistance = maxDistance
                 )
             )
 

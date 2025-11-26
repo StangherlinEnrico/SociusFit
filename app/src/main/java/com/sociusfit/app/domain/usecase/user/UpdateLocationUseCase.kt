@@ -16,13 +16,13 @@ class UpdateLocationUseCase(
      * Execute location update
      * @param latitude Latitude coordinate (-90 to 90)
      * @param longitude Longitude coordinate (-180 to 180)
-     * @param maxDistanceKm Maximum distance for matching in kilometers (1-500)
+     * @param maxDistance Maximum distance for matching in kilometers (1-500)
      * @return Result with updated User or error
      */
     suspend operator fun invoke(
         latitude: Double,
         longitude: Double,
-        maxDistanceKm: Int
+        maxDistance: Int
     ): Result<User> {
         // Validate latitude
         if (latitude < -90.0 || latitude > 90.0) {
@@ -37,13 +37,13 @@ class UpdateLocationUseCase(
         }
 
         // Validate max distance
-        if (maxDistanceKm < 1) {
-            Timber.w("Update location failed: Max distance too small: $maxDistanceKm")
+        if (maxDistance < 1) {
+            Timber.w("Update location failed: Max distance too small: $maxDistance")
             return Result.Error("Maximum distance must be at least 1 km")
         }
 
-        if (maxDistanceKm > 500) {
-            Timber.w("Update location failed: Max distance too large: $maxDistanceKm")
+        if (maxDistance > 500) {
+            Timber.w("Update location failed: Max distance too large: $maxDistance")
             return Result.Error("Maximum distance cannot exceed 500 km")
         }
 
@@ -52,7 +52,7 @@ class UpdateLocationUseCase(
         return userRepository.updateLocation(
             latitude = latitude,
             longitude = longitude,
-            maxDistanceKm = maxDistanceKm
+            maxDistance = maxDistance
         )
     }
 }

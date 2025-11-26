@@ -13,7 +13,7 @@ data class User(
     val isEmailVerified: Boolean,
     val provider: String? = null,
     val location: String? = null,
-    val maxDistanceKm: Int? = null,
+    val maxDistance: Int? = null,
     val createdAt: LocalDateTime
 ) {
     val fullName: String

@@ -69,5 +69,5 @@ data class UpdateProfileRequest(
 data class UpdateLocationRequest(
     val latitude: Double,
     val longitude: Double,
-    val maxDistanceKm: Int
+    val maxDistance: Int
 )

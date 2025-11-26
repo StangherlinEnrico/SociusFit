@@ -22,7 +22,8 @@ class UpdateProfileUseCase(
     suspend operator fun invoke(
         firstName: String,
         lastName: String,
-        location: String?
+        location: String?,
+        maxDistance: Int
     ): Result<User> {
         // Validate first name
         if (firstName.isBlank()) {
@@ -67,7 +68,8 @@ class UpdateProfileUseCase(
         return userRepository.updateProfile(
             firstName = firstName.trim(),
             lastName = lastName.trim(),
-            location = location?.trim()
+            location = location?.trim(),
+            maxDistance = maxDistance
         )
     }
 }

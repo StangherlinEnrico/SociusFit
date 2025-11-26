@@ -1,7 +1,17 @@
 package com.sociusfit.app.presentation.profile
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -11,8 +21,23 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Verified
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,20 +51,6 @@ import com.sociusfit.app.presentation.theme.spacing
 import com.sociusfit.app.utils.StringUtils
 import org.koin.androidx.compose.koinViewModel
 
-/**
- * Schermata del Profilo Utente
- *
- * Features:
- * - Immagine profilo con gradiente
- * - Informazioni utente in card
- * - Email e verifica
- * - Location e distanza massima
- * - Settings icon per modifica profilo
- * - Design moderno Material 3
- *
- * @param navController Controller per la navigazione
- * @param viewModel ViewModel per gestire la logica
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
@@ -47,6 +58,16 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+
+    val currentBackStackEntry by navController.currentBackStackEntryFlow.collectAsState(
+        initial = navController.currentBackStackEntry
+    )
+
+    LaunchedEffect(currentBackStackEntry) {
+        if (currentBackStackEntry?.destination?.route == Routes.PROFILE) {
+            viewModel.loadUserProfile()
+        }
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -93,8 +114,8 @@ fun ProfileScreen(
                     email = uiState.user!!.email,
                     isEmailVerified = uiState.user!!.isEmailVerified,
                     provider = uiState.user!!.provider,
-                    location = uiState.location,
-                    maxDistance = uiState.maxDistance,
+                    location = uiState.user!!.location,
+                    maxDistance = uiState.user!!.maxDistance,
                     modifier = Modifier.padding(paddingValues)
                 )
             }

@@ -103,7 +103,7 @@ fun EditProfileScreen(
                 lastNameError = uiState.lastNameError,
                 locationQuery = uiState.locationQuery,
                 locationError = uiState.locationError,
-                selectedLocation = uiState.selectedLocation,
+                selectedLocation = uiState.selectedMunicipalityName,  // 🔥 FIXED: era selectedLocation
                 locationSuggestions = uiState.locationSuggestions,
                 maxDistance = uiState.maxDistance,
                 isSaving = uiState.isSaving,

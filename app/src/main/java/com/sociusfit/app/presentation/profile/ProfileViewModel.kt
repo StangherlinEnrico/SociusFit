@@ -12,11 +12,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-/**
- * ViewModel per la schermata del profilo
- */
 class ProfileViewModel(
-    private val getCurrentUserUseCase: GetCurrentUserUseCase
+    private val getCurrentUserUseCase: GetCurrentUserUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileUiState())
@@ -36,17 +33,10 @@ class ProfileViewModel(
                 is Result.Success -> {
                     Timber.i("User profile loaded successfully")
 
-                    // TODO: Load location and maxDistance from UserPreferences or API
-                    // For now, using placeholder values
-                    val location = null // "Milano" // Will be loaded from preferences
-                    val maxDistance = null // 25 // Will be loaded from preferences
-
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            user = result.data,
-                            location = location,
-                            maxDistance = maxDistance
+                            user = result.data
                         )
                     }
                 }
@@ -79,8 +69,6 @@ class ProfileViewModel(
  */
 data class ProfileUiState(
     val user: User? = null,
-    val location: String? = null,  // Nome del comune
-    val maxDistance: Int? = null,  // Distanza massima in km
     val isLoading: Boolean = false,
     val error: String? = null
 )

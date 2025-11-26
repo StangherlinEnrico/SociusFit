@@ -20,7 +20,7 @@ class DataStoreManager(private val context: Context) {
     companion object {
         private const val DATASTORE_NAME = "sociusfit_preferences"
 
-        // Keys
+        // Auth Keys
         private val AUTH_TOKEN_KEY = stringPreferencesKey("auth_token")
         private val USER_ID_KEY = intPreferencesKey("user_id")
         private val USER_EMAIL_KEY = stringPreferencesKey("user_email")
@@ -34,58 +34,38 @@ class DataStoreManager(private val context: Context) {
         name = DATASTORE_NAME
     )
 
-    /**
-     * Auth token flow
-     */
+    // ============== AUTH FLOWS ==============
+
     val authToken: Flow<String?> = context.dataStore.data.map { preferences ->
         preferences[AUTH_TOKEN_KEY]
     }
 
-    /**
-     * User ID flow
-     */
     val userId: Flow<Int?> = context.dataStore.data.map { preferences ->
         preferences[USER_ID_KEY]
     }
 
-    /**
-     * User email flow
-     */
     val userEmail: Flow<String?> = context.dataStore.data.map { preferences ->
         preferences[USER_EMAIL_KEY]
     }
 
-    /**
-     * User first name flow
-     */
     val userFirstName: Flow<String?> = context.dataStore.data.map { preferences ->
         preferences[USER_FIRST_NAME_KEY]
     }
 
-    /**
-     * User last name flow
-     */
     val userLastName: Flow<String?> = context.dataStore.data.map { preferences ->
         preferences[USER_LAST_NAME_KEY]
     }
 
-    /**
-     * Is logged in flow
-     */
     val isLoggedIn: Flow<Boolean> = context.dataStore.data.map { preferences ->
         preferences[IS_LOGGED_IN_KEY]?.toBoolean() ?: false
     }
 
-    /**
-     * Refresh token flow
-     */
     val refreshToken: Flow<String?> = context.dataStore.data.map { preferences ->
         preferences[REFRESH_TOKEN_KEY]
     }
 
-    /**
-     * Save authentication token
-     */
+    // ============== AUTH METHODS ==============
+
     suspend fun saveAuthToken(token: String, refreshToken: String? = null) {
         context.dataStore.edit { preferences ->
             preferences[AUTH_TOKEN_KEY] = token
@@ -97,9 +77,6 @@ class DataStoreManager(private val context: Context) {
         }
     }
 
-    /**
-     * Save user data after login/register
-     */
     suspend fun saveUserData(
         userId: Int,
         email: String,
@@ -114,9 +91,6 @@ class DataStoreManager(private val context: Context) {
         }
     }
 
-    /**
-     * Save refresh token after login/register
-     */
     suspend fun saveRefreshToken(refreshToken: String) {
         context.dataStore.edit { preferences ->
             preferences[REFRESH_TOKEN_KEY] = refreshToken
@@ -124,18 +98,12 @@ class DataStoreManager(private val context: Context) {
         }
     }
 
-    /**
-     * Clear all data (logout)
-     */
     suspend fun clearAll() {
         context.dataStore.edit { preferences ->
             preferences.clear()
         }
     }
 
-    /**
-     * Clear only auth token (keep user data for re-login)
-     */
     suspend fun clearAuthToken() {
         context.dataStore.edit { preferences ->
             preferences.remove(AUTH_TOKEN_KEY)
@@ -143,9 +111,6 @@ class DataStoreManager(private val context: Context) {
         }
     }
 
-    /**
-     * Get auth token synchronously (use with caution, prefer Flow)
-     */
     suspend fun getAuthToken(): String? {
         var token: String? = null
         context.dataStore.edit { preferences ->

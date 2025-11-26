@@ -28,14 +28,8 @@ data class UserDto(
     @SerializedName("location")
     val location: String? = null,
 
-    @SerializedName("latitude")
-    val latitude: Double? = null,
-
-    @SerializedName("longitude")
-    val longitude: Double? = null,
-
-    @SerializedName("maxDistanceKm")
-    val maxDistanceKm: Int? = null,
+    @SerializedName("maxDistance")
+    val maxDistance: Int? = null,
 
     @SerializedName("createdAt")
     val createdAt: String // ISO 8601 format

@@ -31,20 +31,21 @@ interface UserRepository {
     suspend fun updateProfile(
         firstName: String,
         lastName: String,
-        location: String?
+        location: String?,
+        maxDistance: Int
     ): Result<User>
 
     /**
      * Update user location coordinates
      * @param latitude Latitude coordinate
      * @param longitude Longitude coordinate
-     * @param maxDistanceKm Maximum distance for matches in kilometers
+     * @param maxDistance Maximum distance for matches in kilometers
      * @return Result with updated User or error
      */
     suspend fun updateLocation(
         latitude: Double,
         longitude: Double,
-        maxDistanceKm: Int
+        maxDistance: Int
     ): Result<User>
 
     /**

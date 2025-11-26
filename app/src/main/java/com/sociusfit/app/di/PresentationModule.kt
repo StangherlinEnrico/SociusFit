@@ -44,19 +44,20 @@ val presentationModule = module {
         )
     }
 
-    // Profile ViewModel
+    // Profile ViewModel 🔥 UPDATED
     viewModel {
         ProfileViewModel(
             getCurrentUserUseCase = get()
         )
     }
 
-    // Edit Profile ViewModel
+    // Edit Profile ViewModel 🔥 UPDATED
     viewModel {
         EditProfileViewModel(
             getCurrentUserUseCase = get(),
             updateProfileUseCase = get(),
-            searchMunicipalitiesUseCase = get()
+            searchMunicipalitiesUseCase = get(),
+            dataStoreManager = get()  // 🔥 NEW
         )
     }
 }
