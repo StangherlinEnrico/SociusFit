@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import timber.log.Timber
 
 /**
  * DataStore manager for local persistence
@@ -26,6 +27,7 @@ class DataStoreManager(private val context: Context) {
         private val USER_FIRST_NAME_KEY = stringPreferencesKey("user_first_name")
         private val USER_LAST_NAME_KEY = stringPreferencesKey("user_last_name")
         private val IS_LOGGED_IN_KEY = stringPreferencesKey("is_logged_in")
+        private val REFRESH_TOKEN_KEY = stringPreferencesKey("refresh_token")
     }
 
     private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
@@ -75,12 +77,23 @@ class DataStoreManager(private val context: Context) {
     }
 
     /**
+     * Refresh token flow
+     */
+    val refreshToken: Flow<String?> = context.dataStore.data.map { preferences ->
+        preferences[REFRESH_TOKEN_KEY]
+    }
+
+    /**
      * Save authentication token
      */
-    suspend fun saveAuthToken(token: String) {
+    suspend fun saveAuthToken(token: String, refreshToken: String? = null) {
         context.dataStore.edit { preferences ->
             preferences[AUTH_TOKEN_KEY] = token
             preferences[IS_LOGGED_IN_KEY] = "true"
+            refreshToken?.let {
+                preferences[REFRESH_TOKEN_KEY] = it
+            }
+            Timber.d("Auth token saved")
         }
     }
 
@@ -98,6 +111,16 @@ class DataStoreManager(private val context: Context) {
             preferences[USER_EMAIL_KEY] = email
             preferences[USER_FIRST_NAME_KEY] = firstName
             preferences[USER_LAST_NAME_KEY] = lastName
+        }
+    }
+
+    /**
+     * Save refresh token after login/register
+     */
+    suspend fun saveRefreshToken(refreshToken: String) {
+        context.dataStore.edit { preferences ->
+            preferences[REFRESH_TOKEN_KEY] = refreshToken
+            Timber.d("Refresh token saved")
         }
     }
 

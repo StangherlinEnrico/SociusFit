@@ -10,8 +10,11 @@ data class AuthResponseDto(
     @SerializedName("token")
     val token: String,
 
+    @SerializedName("refreshToken")
+    val refreshToken: String,
+
     @SerializedName("expiresAt")
-    val expiresAt: String, // ISO 8601 format
+    val expiresAt: String,
 
     @SerializedName("user")
     val user: UserDto

@@ -27,38 +27,34 @@ class AuthRepositoryImpl(
         return try {
             Timber.d("Attempting login for email: $email")
 
-            val response = authApiService.login(
-                LoginRequestDto(
-                    email = email,
-                    password = password
-                )
-            )
+            val request = LoginRequestDto(email = email, password = password)
+            val response = authApiService.login(request)
 
-            if (response.isSuccessful) {
-                val apiResult = response.body()
+            if (response.isSuccessful && response.body()?.success == true) {
+                val authResponseDto = response.body()?.data
 
-                if (apiResult?.success == true && apiResult.data != null) {
-                    val authResponse = AuthResponseMapper.toDomain(apiResult.data)
-
-                    // Save token and user data to DataStore
-                    dataStoreManager.saveAuthToken(authResponse.token)
-                    dataStoreManager.saveUserData(
-                        userId = authResponse.user.id,
-                        email = authResponse.user.email,
-                        firstName = authResponse.user.firstName,
-                        lastName = authResponse.user.lastName
+                if (authResponseDto != null) {
+                    dataStoreManager.saveAuthToken(
+                        token = authResponseDto.token,
+                        refreshToken = authResponseDto.refreshToken
                     )
 
-                    Timber.i("Login successful for user: ${authResponse.user.email}")
-                    Result.Success(authResponse, apiResult.message)
+                    dataStoreManager.saveUserData(
+                        userId = authResponseDto.user.id,
+                        email = authResponseDto.user.email,
+                        firstName = authResponseDto.user.firstName,
+                        lastName = authResponseDto.user.lastName
+                    )
+
+                    Timber.i("Login successful")
+                    Result.Success(AuthResponseMapper.toDomain(authResponseDto))
                 } else {
-                    val errorMessage = apiResult?.message ?: "Login failed"
-                    Timber.w("Login failed: $errorMessage")
-                    Result.Error(errorMessage)
+                    Timber.w("Login response data is null")
+                    Result.Error("Invalid response from server")
                 }
             } else {
-                val errorMessage = "HTTP ${response.code()}: ${response.message()}"
-                Timber.e("Login request failed: $errorMessage")
+                val errorMessage = response.body()?.message ?: "Login failed"
+                Timber.w("Login failed: $errorMessage")
                 Result.Error(errorMessage)
             }
         } catch (e: Exception) {
@@ -76,40 +72,39 @@ class AuthRepositoryImpl(
         return try {
             Timber.d("Attempting registration for email: $email")
 
-            val response = authApiService.register(
-                RegisterRequestDto(
-                    firstName = firstName,
-                    lastName = lastName,
-                    email = email,
-                    password = password
-                )
+            val request = RegisterRequestDto(
+                firstName = firstName,
+                lastName = lastName,
+                email = email,
+                password = password
             )
+            val response = authApiService.register(request)
 
-            if (response.isSuccessful) {
-                val apiResult = response.body()
+            if (response.isSuccessful && response.body()?.success == true) {
+                val authResponseDto = response.body()?.data
 
-                if (apiResult?.success == true && apiResult.data != null) {
-                    val authResponse = AuthResponseMapper.toDomain(apiResult.data)
-
-                    // Save token and user data to DataStore
-                    dataStoreManager.saveAuthToken(authResponse.token)
-                    dataStoreManager.saveUserData(
-                        userId = authResponse.user.id,
-                        email = authResponse.user.email,
-                        firstName = authResponse.user.firstName,
-                        lastName = authResponse.user.lastName
+                if (authResponseDto != null) {
+                    dataStoreManager.saveAuthToken(
+                        token = authResponseDto.token,
+                        refreshToken = authResponseDto.refreshToken
                     )
 
-                    Timber.i("Registration successful for user: ${authResponse.user.email}")
-                    Result.Success(authResponse, apiResult.message)
+                    dataStoreManager.saveUserData(
+                        userId = authResponseDto.user.id,
+                        email = authResponseDto.user.email,
+                        firstName = authResponseDto.user.firstName,
+                        lastName = authResponseDto.user.lastName
+                    )
+
+                    Timber.i("Registration successful")
+                    Result.Success(AuthResponseMapper.toDomain(authResponseDto))
                 } else {
-                    val errorMessage = apiResult?.message ?: "Registration failed"
-                    Timber.w("Registration failed: $errorMessage")
-                    Result.Error(errorMessage)
+                    Timber.w("Registration response data is null")
+                    Result.Error("Invalid response from server")
                 }
             } else {
-                val errorMessage = "HTTP ${response.code()}: ${response.message()}"
-                Timber.e("Registration request failed: $errorMessage")
+                val errorMessage = response.body()?.message ?: "Registration failed"
+                Timber.w("Registration failed: $errorMessage")
                 Result.Error(errorMessage)
             }
         } catch (e: Exception) {
@@ -132,31 +127,34 @@ class AuthRepositoryImpl(
                 )
             )
 
-            if (response.isSuccessful) {
-                val apiResult = response.body()
+            if (response.isSuccessful && response.body()?.success == true) {
+                val authResponseDto = response.body()?.data
 
-                if (apiResult?.success == true && apiResult.data != null) {
-                    val authResponse = AuthResponseMapper.toDomain(apiResult.data)
-
-                    // Save token and user data to DataStore
-                    dataStoreManager.saveAuthToken(authResponse.token)
-                    dataStoreManager.saveUserData(
-                        userId = authResponse.user.id,
-                        email = authResponse.user.email,
-                        firstName = authResponse.user.firstName,
-                        lastName = authResponse.user.lastName
+                if (authResponseDto != null) {
+                    dataStoreManager.saveAuthToken(
+                        token = authResponseDto.token,
+                        refreshToken = authResponseDto.refreshToken
                     )
 
-                    Timber.i("OAuth login successful for user: ${authResponse.user.email}")
-                    Result.Success(authResponse, apiResult.message)
+                    dataStoreManager.saveUserData(
+                        userId = authResponseDto.user.id,
+                        email = authResponseDto.user.email,
+                        firstName = authResponseDto.user.firstName,
+                        lastName = authResponseDto.user.lastName
+                    )
+
+                    Timber.i("OAuth login successful for user: ${authResponseDto.user.email}")
+                    Result.Success(
+                        AuthResponseMapper.toDomain(authResponseDto),
+                        response.body()?.message
+                    )
                 } else {
-                    val errorMessage = apiResult?.message ?: "OAuth login failed"
-                    Timber.w("OAuth login failed: $errorMessage")
-                    Result.Error(errorMessage)
+                    Timber.w("OAuth login response data is null")
+                    Result.Error("Invalid response from server")
                 }
             } else {
-                val errorMessage = "HTTP ${response.code()}: ${response.message()}"
-                Timber.e("OAuth login request failed: $errorMessage")
+                val errorMessage = response.body()?.message ?: "OAuth login failed"
+                Timber.w("OAuth login failed: $errorMessage")
                 Result.Error(errorMessage)
             }
         } catch (e: Exception) {

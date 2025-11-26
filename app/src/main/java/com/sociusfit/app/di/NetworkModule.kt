@@ -7,6 +7,8 @@ import com.sociusfit.app.data.remote.adapter.LocalDateTimeAdapter
 import com.sociusfit.app.data.remote.api.AuthApiService
 import com.sociusfit.app.data.remote.api.UserApiService
 import com.sociusfit.app.data.remote.interceptor.AuthInterceptor
+import com.sociusfit.app.data.remote.interceptor.TokenRefreshHelper
+import com.sociusfit.app.data.remote.interceptor.TokenRefreshInterceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.koin.dsl.module
@@ -30,22 +32,26 @@ val networkModule = module {
     }
 
     // Logging Interceptor
-    single {
+    single<HttpLoggingInterceptor> {
         HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
         }
     }
 
     // Auth Interceptor
-    single {
+    single<AuthInterceptor> {
         AuthInterceptor(dataStoreManager = get())
     }
 
     // OkHttp Client
-    single {
+    single<OkHttpClient> {
         OkHttpClient.Builder()
-            .addInterceptor(get<AuthInterceptor>())
             .addInterceptor(get<HttpLoggingInterceptor>())
+            .addInterceptor(get<AuthInterceptor>())
+            .addInterceptor(TokenRefreshInterceptor(
+                dataStoreManager = get(),
+                tokenRefreshHelper = TokenRefreshHelper(authApiService = get())
+            ))
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
@@ -53,7 +59,7 @@ val networkModule = module {
     }
 
     // Retrofit instance
-    single {
+    single<Retrofit> {
         Retrofit.Builder()
             .baseUrl(getBaseUrl())
             .client(get())
