@@ -19,6 +19,44 @@ class UserRepositoryImpl(
     private val dataStoreManager: DataStoreManager
 ) : UserRepository {
 
+    override suspend fun getCurrentUser(): Result<User> {
+        return try {
+            Timber.d("Fetching current user")
+
+            val response = userApiService.getCurrentUser()
+
+            if (response.isSuccessful) {
+                val apiResult = response.body()
+
+                if (apiResult?.success == true && apiResult.data != null) {
+                    val user = UserMapper.toDomain(apiResult.data)
+
+                    // Update local cache
+                    dataStoreManager.saveUserData(
+                        userId = user.id,
+                        email = user.email,
+                        firstName = user.firstName,
+                        lastName = user.lastName
+                    )
+
+                    Timber.i("User fetched successfully")
+                    Result.Success(user, apiResult.message)
+                } else {
+                    val errorMessage = apiResult?.message ?: "Failed to fetch user"
+                    Timber.w("Get user failed: $errorMessage")
+                    Result.Error(errorMessage)
+                }
+            } else {
+                val errorMessage = "HTTP ${response.code()}: ${response.message()}"
+                Timber.e("Get user request failed: $errorMessage")
+                Result.Error(errorMessage)
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Exception fetching user")
+            Result.Error(e.message ?: "Network error occurred")
+        }
+    }
+
     override suspend fun getUserById(userId: Int): Result<User> {
         return try {
             Timber.d("Fetching user by ID: $userId")
@@ -31,16 +69,16 @@ class UserRepositoryImpl(
                 if (apiResult?.success == true && apiResult.data != null) {
                     val user = UserMapper.toDomain(apiResult.data)
 
-                    Timber.i("User fetched successfully: ${user.email}")
+                    Timber.i("User fetched successfully")
                     Result.Success(user, apiResult.message)
                 } else {
                     val errorMessage = apiResult?.message ?: "Failed to fetch user"
-                    Timber.w("Fetch user failed: $errorMessage")
+                    Timber.w("Get user by ID failed: $errorMessage")
                     Result.Error(errorMessage)
                 }
             } else {
                 val errorMessage = "HTTP ${response.code()}: ${response.message()}"
-                Timber.e("Fetch user request failed: $errorMessage")
+                Timber.e("Get user by ID request failed: $errorMessage")
                 Result.Error(errorMessage)
             }
         } catch (e: Exception) {
@@ -49,41 +87,20 @@ class UserRepositoryImpl(
         }
     }
 
-    override suspend fun getCurrentUser(): Result<User> {
-        return try {
-            Timber.d("Getting current user profile")
-            val response = userApiService.getCurrentUser()
-
-            if (response.isSuccessful && response.body()?.success == true) {
-                val userDto = response.body()!!.data!!
-                val user = UserMapper.toDomain(userDto)
-                Timber.i("Current user profile loaded successfully")
-                Result.Success(user)
-            } else {
-                val errorMessage = response.body()?.message ?: "Failed to load user profile"
-                Timber.w("Get current user failed: $errorMessage")
-                Result.Error(errorMessage)
-            }
-        } catch (e: Exception) {
-            Timber.e(e, "Exception during get current user")
-            Result.Error(e.message ?: "Network error occurred")
-        }
-    }
-
+    /**
+     * Update profile sends ONLY firstName and lastName
+     */
     override suspend fun updateProfile(
         firstName: String,
-        lastName: String,
-        location: String?,
-        maxDistance: Int
+        lastName: String
     ): Result<User> {
         return try {
-            Timber.d("Updating user profile")
+            Timber.d("Updating user profile: firstName=$firstName, lastName=$lastName")
 
             val response = userApiService.updateProfile(
                 UpdateProfileRequest(
                     firstName = firstName,
-                    lastName = lastName,
-                    location = location
+                    lastName = lastName
                 )
             )
 
@@ -93,7 +110,7 @@ class UserRepositoryImpl(
                 if (apiResult?.success == true && apiResult.data != null) {
                     val user = UserMapper.toDomain(apiResult.data)
 
-                    // Update local user data
+                    // Update local cache
                     dataStoreManager.saveUserData(
                         userId = user.id,
                         email = user.email,
@@ -119,18 +136,19 @@ class UserRepositoryImpl(
         }
     }
 
+    /**
+     * 🔥 FIXED: Update location sends municipality ISTAT code
+     */
     override suspend fun updateLocation(
-        latitude: Double,
-        longitude: Double,
-        maxDistance: Int
+        locationCode: String?,
+        maxDistance: Int?
     ): Result<User> {
         return try {
-            Timber.d("Updating user location: lat=$latitude, lon=$longitude, maxDistance=$maxDistance")
+            Timber.d("Updating user location: locationCode=$locationCode, maxDistance=$maxDistance")
 
             val response = userApiService.updateLocation(
                 UpdateLocationRequest(
-                    latitude = latitude,
-                    longitude = longitude,
+                    location = locationCode,  // Send ISTAT code (e.g., "026086")
                     maxDistance = maxDistance
                 )
             )

@@ -6,7 +6,7 @@ import com.sociusfit.app.domain.repository.UserRepository
 import timber.log.Timber
 
 /**
- * Use case for updating user profile
+ * 🔥 FIXED: Use case for updating user profile (ONLY firstName and lastName)
  * Handles validation and business logic for profile updates
  */
 class UpdateProfileUseCase(
@@ -16,14 +16,11 @@ class UpdateProfileUseCase(
      * Execute profile update
      * @param firstName User first name
      * @param lastName User last name
-     * @param location User location description (optional)
      * @return Result with updated User or error
      */
     suspend operator fun invoke(
         firstName: String,
-        lastName: String,
-        location: String?,
-        maxDistance: Int
+        lastName: String
     ): Result<User> {
         // Validate first name
         if (firstName.isBlank()) {
@@ -57,19 +54,11 @@ class UpdateProfileUseCase(
             return Result.Error("Last name must be less than 100 characters")
         }
 
-        // Validate location if provided
-        if (location != null && location.isNotBlank() && location.length > 255) {
-            Timber.w("Update profile failed: Location too long")
-            return Result.Error("Location must be less than 255 characters")
-        }
-
         // All validations passed, proceed with update
         Timber.d("Validation passed, proceeding with profile update")
         return userRepository.updateProfile(
             firstName = firstName.trim(),
-            lastName = lastName.trim(),
-            location = location?.trim(),
-            maxDistance = maxDistance
+            lastName = lastName.trim()
         )
     }
 }

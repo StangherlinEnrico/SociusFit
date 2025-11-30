@@ -47,7 +47,9 @@ val presentationModule = module {
     // Profile ViewModel 🔥 UPDATED
     viewModel {
         ProfileViewModel(
-            getCurrentUserUseCase = get()
+            getCurrentUserUseCase = get(),
+            getMunicipalityByCodeUseCase = get(),
+            logoutUseCase = get()
         )
     }
 
@@ -56,8 +58,9 @@ val presentationModule = module {
         EditProfileViewModel(
             getCurrentUserUseCase = get(),
             updateProfileUseCase = get(),
+            updateLocationUseCase = get(),
             searchMunicipalitiesUseCase = get(),
-            dataStoreManager = get()  // 🔥 NEW
+            getMunicipalityByCodeUseCase = get()
         )
     }
 }

@@ -22,30 +22,25 @@ interface UserRepository {
     suspend fun getCurrentUser(): Result<User>
 
     /**
-     * Update user profile
+     * Update user profile (ONLY firstName and lastName)
      * @param firstName User first name
      * @param lastName User last name
-     * @param location User location description
      * @return Result with updated User or error
      */
     suspend fun updateProfile(
         firstName: String,
-        lastName: String,
-        location: String?,
-        maxDistance: Int
+        lastName: String
     ): Result<User>
 
     /**
-     * Update user location coordinates
-     * @param latitude Latitude coordinate
-     * @param longitude Longitude coordinate
-     * @param maxDistance Maximum distance for matches in kilometers
+     * 🔥 FIXED: Update user location settings
+     * @param locationCode Municipality ISTAT code (e.g., "026086" for Treviso)
+     * @param maxDistance Maximum distance for matches in kilometers (nullable)
      * @return Result with updated User or error
      */
     suspend fun updateLocation(
-        latitude: Double,
-        longitude: Double,
-        maxDistance: Int
+        locationCode: String?,
+        maxDistance: Int?
     ): Result<User>
 
     /**

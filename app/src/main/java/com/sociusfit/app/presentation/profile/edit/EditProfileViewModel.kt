@@ -1,75 +1,154 @@
 package com.sociusfit.app.presentation.profile.edit
 
-import androidx.compose.runtime.currentCompositeKeyHash
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sociusfit.app.data.local.DataStoreManager
 import com.sociusfit.app.domain.model.Municipality
 import com.sociusfit.app.domain.model.Result
+import com.sociusfit.app.domain.usecase.location.GetMunicipalityByCodeUseCase
 import com.sociusfit.app.domain.usecase.location.SearchMunicipalitiesUseCase
 import com.sociusfit.app.domain.usecase.user.GetCurrentUserUseCase
+import com.sociusfit.app.domain.usecase.user.UpdateLocationUseCase
 import com.sociusfit.app.domain.usecase.user.UpdateProfileUseCase
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
 /**
- * ViewModel per la schermata di modifica profilo
+ * 🔥 FIXED: ViewModel for edit profile screen
+ * Separates search field from selected location display
  */
 @OptIn(FlowPreview::class)
 class EditProfileViewModel(
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val updateProfileUseCase: UpdateProfileUseCase,
+    private val updateLocationUseCase: UpdateLocationUseCase,
     private val searchMunicipalitiesUseCase: SearchMunicipalitiesUseCase,
-    private val dataStoreManager: DataStoreManager  // 🔥 NEW
+    private val getMunicipalityByCodeUseCase: GetMunicipalityByCodeUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(EditProfileUiState())
-    val uiState: StateFlow<EditProfileUiState> = _uiState.asStateFlow()
+    val uiState: StateFlow<EditProfileUiState> = _uiState
 
+    // Flow for location search with debounce
     private val locationQueryFlow = MutableStateFlow("")
-    private var currentMunicipalities: List<Municipality> = emptyList()  // 🔥 NEW: Cache municipalities
+
+    // Cached municipalities from last search
+    private var cachedMunicipalities: List<Municipality> = emptyList()
 
     init {
-        loadCurrentUser()
-        setupLocationSearch()
+        loadUserProfile()
+        observeLocationQuery()
     }
 
     /**
-     * Setup location search with debounce
+     * Observe location query changes and trigger search with debounce
      */
-    private fun setupLocationSearch() {
+    private fun observeLocationQuery() {
         viewModelScope.launch {
             locationQueryFlow
                 .debounce(300)
-                .filter { it.length >= 2 }
                 .distinctUntilChanged()
                 .collect { query ->
-                    searchLocations(query)
+                    if (query.length >= 2) {
+                        searchMunicipalities(query)
+                    } else {
+                        _uiState.update {
+                            it.copy(
+                                locationSuggestions = emptyList()
+                            )
+                        }
+                        cachedMunicipalities = emptyList()
+                    }
                 }
         }
     }
 
     /**
-     * Load current user data and location preferences
+     * Search municipalities based on query
      */
-    private fun loadCurrentUser() {
-        _uiState.update { it.copy(isLoading = true) }
-
+    private fun searchMunicipalities(query: String) {
         viewModelScope.launch {
+            Timber.d("Searching municipalities with query: $query")
+
+            when (val result = searchMunicipalitiesUseCase(query)) {
+                is Result.Success -> {
+                    cachedMunicipalities = result.data
+
+                    val suggestions = result.data.map { municipality ->
+                        "${municipality.name} (${municipality.regionName})"
+                    }
+
+                    _uiState.update {
+                        it.copy(
+                            locationSuggestions = suggestions,
+                            locationError = null
+                        )
+                    }
+
+                    Timber.d("Found ${suggestions.size} municipalities")
+                }
+
+                is Result.Error -> {
+                    Timber.w("Search failed: ${result.message}")
+                    _uiState.update {
+                        it.copy(
+                            locationSuggestions = emptyList(),
+                            locationError = result.message
+                        )
+                    }
+                }
+
+                else -> {
+                    _uiState.update {
+                        it.copy(
+                            locationSuggestions = emptyList(),
+                            locationError = "Errore durante la ricerca"
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * 🔥 FIXED: Load current user profile
+     * Keep search field EMPTY, only show selected location in chip/badge
+     */
+    private fun loadUserProfile() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+
             when (val result = getCurrentUserUseCase()) {
                 is Result.Success -> {
                     val user = result.data
+
+                    // If user has a location code, resolve it to display name
+                    val displayName = if (user.location != null) {
+                        when (val municipalityResult = getMunicipalityByCodeUseCase(user.location)) {
+                            is Result.Success -> {
+                                val municipality = municipalityResult.data
+                                "${municipality.name} (${municipality.regionName})"
+                            }
+                            else -> user.location // Fallback to code if lookup fails
+                        }
+                    } else {
+                        null
+                    }
 
                     _uiState.update {
                         it.copy(
                             isLoading = false,
                             firstName = user.firstName,
                             lastName = user.lastName,
+                            locationQuery = "",  // 🔥 KEEP SEARCH FIELD EMPTY
                             selectedMunicipalityCode = user.location,
-                            selectedMunicipalityName = currentMunicipalities.first { it.code == user.location }.name,
-                            maxDistance = user.maxDistance ?: 0
+                            selectedMunicipalityName = displayName,
+                            maxDistance = user.maxDistance ?: 25
                         )
                     }
                 }
@@ -124,25 +203,41 @@ class EditProfileViewModel(
     }
 
     /**
-     * 🔥 NEW: Handle location selection with Municipality object
+     * 🔥 Handle location selection - store BOTH code and name
      */
-    fun onLocationSelected(municipalityName: String) {
+    fun onLocationSelected(municipalityDisplayName: String) {
         // Find the municipality from cached results
-        val municipality = currentMunicipalities.find { it.getFullName() == municipalityName }
+        val municipality = cachedMunicipalities.find {
+            "${it.name} (${it.regionName})" == municipalityDisplayName
+        }
 
         if (municipality != null) {
+            Timber.d("Selected municipality: ${municipality.name} (code: ${municipality.code})")
+
             _uiState.update {
                 it.copy(
+                    locationQuery = "",  // 🔥 CLEAR SEARCH FIELD after selection
                     selectedMunicipalityCode = municipality.code,
-                    selectedMunicipalityName = municipality.getFullName(),
-                    locationQuery = "",
-                    locationSuggestions = emptyList(),
-                    locationError = null
+                    selectedMunicipalityName = municipalityDisplayName,
+                    locationSuggestions = emptyList()
                 )
             }
-            Timber.d("Location selected: ${municipality.code} - ${municipality.getFullName()}")
         } else {
-            Timber.w("Municipality not found in cache: $municipalityName")
+            Timber.w("Municipality not found in cache: $municipalityDisplayName")
+        }
+    }
+
+    /**
+     * 🔥 NEW: Clear selected location
+     */
+    fun onClearLocation() {
+        _uiState.update {
+            it.copy(
+                locationQuery = "",
+                selectedMunicipalityCode = null,
+                selectedMunicipalityName = null,
+                locationSuggestions = emptyList()
+            )
         }
     }
 
@@ -153,90 +248,86 @@ class EditProfileViewModel(
     }
 
     /**
-     * Search locations with autocomplete
+     * Save profile with TWO separate API calls
      */
-    private fun searchLocations(query: String) {
-        viewModelScope.launch {
-            Timber.d("Searching locations: $query")
-
-            when (val result = searchMunicipalitiesUseCase(query)) {
-                is Result.Success -> {
-                    currentMunicipalities = result.data  // 🔥 Cache municipalities
-                    val suggestions = result.data.map { it.getFullName() }
-                    _uiState.update {
-                        it.copy(locationSuggestions = suggestions)
-                    }
-                }
-
-                is Result.Error -> {
-                    Timber.w("Location search error: ${result.message}")
-                    _uiState.update {
-                        it.copy(locationSuggestions = emptyList())
-                    }
-                }
-
-                else -> {
-                    _uiState.update {
-                        it.copy(locationSuggestions = emptyList())
-                    }
-                }
-            }
-        }
-    }
-
     fun onSaveClick() {
         val currentState = _uiState.value
 
-        // Validate
+        // Validate fields
         var hasError = false
 
         if (currentState.firstName.isBlank()) {
             _uiState.update { it.copy(firstNameError = "Il nome è obbligatorio") }
-            hasError = true
-        } else if (currentState.firstName.length < 2) {
-            _uiState.update { it.copy(firstNameError = "Il nome deve avere almeno 2 caratteri") }
             hasError = true
         }
 
         if (currentState.lastName.isBlank()) {
             _uiState.update { it.copy(lastNameError = "Il cognome è obbligatorio") }
             hasError = true
-        } else if (currentState.lastName.length < 2) {
-            _uiState.update { it.copy(lastNameError = "Il cognome deve avere almeno 2 caratteri") }
-            hasError = true
         }
 
-        if (hasError) return
-
-        // Save
-        _uiState.update { it.copy(isSaving = true) }
+        if (hasError) {
+            return
+        }
 
         viewModelScope.launch {
-            Timber.d("Saving profile changes")
+            _uiState.update { it.copy(isSaving = true, error = null) }
 
-            when (val result = updateProfileUseCase(
+            // STEP 1: Update profile (firstName, lastName)
+            Timber.d("Updating profile: firstName=${currentState.firstName}, lastName=${currentState.lastName}")
+
+            when (val profileResult = updateProfileUseCase(
                 firstName = currentState.firstName.trim(),
-                lastName = currentState.lastName.trim(),
-                location = currentState.selectedMunicipalityName,
-                maxDistance = currentState.maxDistance
+                lastName = currentState.lastName.trim()
             )) {
                 is Result.Success -> {
                     Timber.i("Profile updated successfully")
 
-                    _uiState.update {
-                        it.copy(
-                            isSaving = false,
-                            isSaved = true
-                        )
+                    // STEP 2: Update location with ISTAT CODE
+                    Timber.d("Updating location: code=${currentState.selectedMunicipalityCode}, maxDistance=${currentState.maxDistance}")
+
+                    when (val locationResult = updateLocationUseCase(
+                        locationCode = currentState.selectedMunicipalityCode,
+                        maxDistance = currentState.maxDistance
+                    )) {
+                        is Result.Success -> {
+                            Timber.i("Location updated successfully")
+
+                            _uiState.update {
+                                it.copy(
+                                    isSaving = false,
+                                    isSaved = true
+                                )
+                            }
+                        }
+
+                        is Result.Error -> {
+                            Timber.w("Failed to update location: ${locationResult.message}")
+                            _uiState.update {
+                                it.copy(
+                                    isSaving = false,
+                                    error = "Profilo aggiornato, ma errore nel salvare la località: ${locationResult.message}"
+                                )
+                            }
+                        }
+
+                        else -> {
+                            _uiState.update {
+                                it.copy(
+                                    isSaving = false,
+                                    error = "Profilo aggiornato, ma errore nel salvare la località"
+                                )
+                            }
+                        }
                     }
                 }
 
                 is Result.Error -> {
-                    Timber.w("Failed to update profile: ${result.message}")
+                    Timber.w("Failed to update profile: ${profileResult.message}")
                     _uiState.update {
                         it.copy(
                             isSaving = false,
-                            error = result.message
+                            error = profileResult.message
                         )
                     }
                 }
@@ -259,18 +350,19 @@ class EditProfileViewModel(
 }
 
 /**
- * UI State per la schermata di modifica profilo
- * 🔥 UPDATED: Separated municipalityCode and municipalityName
+ * 🔥 UI State
+ * locationQuery = campo di ricerca (può essere vuoto anche se c'è una località selezionata)
+ * selectedMunicipalityName = località selezionata mostrata nel chip (può essere diversa da locationQuery)
  */
 data class EditProfileUiState(
     val firstName: String = "",
     val lastName: String = "",
     val firstNameError: String? = null,
     val lastNameError: String? = null,
-    val locationQuery: String = "",
+    val locationQuery: String = "",  // 🔥 Campo di ricerca (può essere vuoto)
     val locationError: String? = null,
-    val selectedMunicipalityCode: String? = null,  // 🔥 NEW: e.g., "022188"
-    val selectedMunicipalityName: String? = null,  // 🔥 NEW: e.g., "Treviso (Veneto)"
+    val selectedMunicipalityCode: String? = null,  // 🔥 Codice ISTAT (e.g., "026086")
+    val selectedMunicipalityName: String? = null,  // 🔥 Nome visualizzato (e.g., "Treviso (Veneto)")
     val locationSuggestions: List<String> = emptyList(),
     val maxDistance: Int = 25,
     val isLoading: Boolean = false,

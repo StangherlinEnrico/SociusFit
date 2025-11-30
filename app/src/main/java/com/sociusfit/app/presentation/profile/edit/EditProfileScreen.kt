@@ -12,8 +12,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
@@ -37,7 +35,8 @@ import org.koin.androidx.compose.koinViewModel
  * Features:
  * - Header con avatar placeholder
  * - Modifica nome e cognome
- * - Selezione località con autocomplete
+ * - Selezione località con autocomplete e chip separato
+ * - Campo di ricerca sempre vuoto all'apertura
  * - Slider distanza massima con preview
  * - Design moderno e consistente con SociusFit
  *
@@ -103,7 +102,7 @@ fun EditProfileScreen(
                 lastNameError = uiState.lastNameError,
                 locationQuery = uiState.locationQuery,
                 locationError = uiState.locationError,
-                selectedLocation = uiState.selectedMunicipalityName,  // 🔥 FIXED: era selectedLocation
+                selectedLocation = uiState.selectedMunicipalityName,  // 🔥 FIXED
                 locationSuggestions = uiState.locationSuggestions,
                 maxDistance = uiState.maxDistance,
                 isSaving = uiState.isSaving,
@@ -222,13 +221,13 @@ private fun EditProfileContent(
 
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 
-            // Location search con suggestions
-            LocationSearchSection(
+            // 🔥 FIXED: Location section with separate chip and search field
+            LocationSection(
                 locationQuery = locationQuery,
                 locationError = locationError,
                 selectedLocation = selectedLocation,
                 locationSuggestions = locationSuggestions,
-                isSaving = isSaving,
+                enabled = !isSaving,
                 onLocationQueryChange = onLocationQueryChange,
                 onLocationSelected = onLocationSelected
             )
@@ -332,80 +331,90 @@ private fun SectionTitle(
 }
 
 /**
- * Sezione ricerca località con autocomplete
+ * 🔥 FIXED: Sezione località con chip separato e campo di ricerca vuoto
+ *
+ * Comportamento:
+ * - All'apertura, il campo di ricerca è VUOTO
+ * - Se c'è una località selezionata, viene mostrata in un chip sopra
+ * - Il chip ha un pulsante X per rimuovere la località
+ * - Il campo di ricerca è indipendente dalla località selezionata
  */
 @Composable
-private fun LocationSearchSection(
+private fun LocationSection(
     locationQuery: String,
     locationError: String?,
     selectedLocation: String?,
     locationSuggestions: List<String>,
-    isSaving: Boolean,
+    enabled: Boolean,
     onLocationQueryChange: (String) -> Unit,
     onLocationSelected: (String) -> Unit
 ) {
-    Column {
-        // Selected location chip
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        // 🔥 Selected location chip with remove button
         AnimatedVisibility(
             visible = selectedLocation != null,
             enter = fadeIn() + expandVertically(),
             exit = fadeOut() + shrinkVertically()
         ) {
             selectedLocation?.let {
-                ElevatedCard(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.elevatedCardColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer
-                    )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = MaterialTheme.spacing.medium),
+                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(MaterialTheme.spacing.medium),
-                        verticalAlignment = Alignment.CenterVertically
+                    // Chip con località selezionata
+                    ElevatedCard(
+                        modifier = Modifier.weight(1f),
+                        colors = CardDefaults.elevatedCardColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer
+                        )
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.LocationOn,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
-                        Text(
-                            text = it,
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.weight(1f)
-                        )
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
-                        )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(MaterialTheme.spacing.medium),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.LocationOn,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Text(
+                                text = it,
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
                     }
                 }
-                Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
             }
         }
 
-        // Search field
+        // 🔥 Campo di ricerca (sempre vuoto all'apertura)
         SFTextField(
             value = locationQuery,
             onValueChange = onLocationQueryChange,
-            label = "Cerca comune",
-            placeholder = "Milano, Roma, Torino...",
+            label = if (selectedLocation != null) "Cambia località" else "Cerca comune",
+            placeholder = "es. Milano, Roma, Torino...",
             leadingIcon = Icons.Default.Search,
             isError = locationError != null,
             errorMessage = locationError,
             keyboardType = androidx.compose.ui.text.input.KeyboardType.Text,
             imeAction = ImeAction.Done,
-            enabled = !isSaving,
+            enabled = enabled,
             modifier = Modifier.fillMaxWidth()
         )
 
-        // Suggestions dropdown
+        // Dropdown suggerimenti
         AnimatedVisibility(
             visible = locationSuggestions.isNotEmpty(),
             enter = fadeIn() + expandVertically(),

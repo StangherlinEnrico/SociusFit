@@ -1,95 +1,98 @@
+// File: app/src/main/java/com/sociusfit/app/di/NetworkModule.kt
+
 package com.sociusfit.app.di
 
-import android.os.Build
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.sociusfit.app.data.remote.adapter.LocalDateTimeAdapter
 import com.sociusfit.app.data.remote.api.AuthApiService
 import com.sociusfit.app.data.remote.api.UserApiService
 import com.sociusfit.app.data.remote.interceptor.AuthInterceptor
+import com.sociusfit.app.data.remote.interceptor.TokenRefreshInterceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import okhttp3.logging.HttpLoggingInterceptor.Level.BODY
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
 
-/**
- * Koin module for network dependencies
- * Provides Retrofit, OkHttp, Gson, and API services
- */
 val networkModule = module {
 
-    // Gson instance with custom adapters
+    // 🔥 ADD: Gson instance
     single<Gson> {
         GsonBuilder()
-            .registerTypeAdapter(LocalDateTime::class.java, LocalDateTimeAdapter())
             .setLenient()
             .create()
     }
 
     // Logging Interceptor
-    single<HttpLoggingInterceptor> {
+    single {
         HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
+            level = BODY
         }
     }
 
     // Auth Interceptor
-    single<AuthInterceptor> {
+    single {
         AuthInterceptor(dataStoreManager = get())
     }
 
-    // OkHttp Client - FIXED: Rimossa dipendenza circolare con TokenRefreshInterceptor
-    single<OkHttpClient> {
+    // 🔥 SEPARATE: OkHttpClient BASE (senza TokenRefreshInterceptor)
+    single(named("base")) {
         OkHttpClient.Builder()
             .addInterceptor(get<HttpLoggingInterceptor>())
-            .addInterceptor(get<AuthInterceptor>())
-            // TODO: Re-implementare TokenRefreshInterceptor con lazy initialization
-            // per evitare dipendenze circolari
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
             .build()
     }
 
-    // Retrofit instance
-    single<Retrofit> {
+    // 🔥 SEPARATE: Retrofit BASE (per AuthApiService)
+    single(named("base")) {
         Retrofit.Builder()
-            .baseUrl(getBaseUrl())
-            .client(get())
+            .baseUrl("http://192.168.1.3:5000/")
+            .client(get(named("base")))
             .addConverterFactory(GsonConverterFactory.create(get()))
             .build()
     }
 
-    // Auth API Service
-    single<AuthApiService> {
-        get<Retrofit>().create(AuthApiService::class.java)
+    // 🔥 AuthApiService SENZA interceptor auth (per evitare loop)
+    single {
+        get<Retrofit>(named("base")).create(AuthApiService::class.java)
     }
 
-    // User API Service
-    single<UserApiService> {
+    // 🔥 Token Refresh Interceptor (NOW can get AuthApiService)
+    single {
+        TokenRefreshInterceptor(
+            dataStoreManager = get(),
+            authApiService = get()
+        )
+    }
+
+    // 🔥 MAIN: OkHttpClient con TUTTI gli interceptor
+    single {
+        OkHttpClient.Builder()
+            .addInterceptor(get<HttpLoggingInterceptor>())
+            .addInterceptor(get<AuthInterceptor>())  // Aggiunge token
+            .addInterceptor(get<TokenRefreshInterceptor>())  // Gestisce refresh
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .build()
+    }
+
+    // 🔥 MAIN: Retrofit con OkHttpClient completo
+    single {
+        Retrofit.Builder()
+            .baseUrl("http://192.168.1.3:5000/")
+            .client(get<OkHttpClient>())  // Usa quello con tutti gli interceptor
+            .addConverterFactory(GsonConverterFactory.create(get()))
+            .build()
+    }
+
+    // 🔥 UserApiService usa Retrofit MAIN (con auth)
+    single {
         get<Retrofit>().create(UserApiService::class.java)
     }
-}
-
-/**
- * Get base URL based on build configuration
- * TODO: Replace with actual production URL
- */
-private fun getBaseUrl(): String {
-    return if (isEmulator()) {
-        "http://10.0.2.2:5000/"      // Emulator
-    } else {
-        "http://192.168.1.3:5000/"   // Physical device | Bisogna aprire la porta 5000 dal firewall
-    }
-
-    // Production: return "https://api.sociusfit.com/"
-}
-
-private fun isEmulator(): Boolean {
-    return (Build.FINGERPRINT.startsWith("generic")
-            || Build.MODEL.contains("Emulator")
-            || Build.MANUFACTURER.contains("Genymotion"))
 }

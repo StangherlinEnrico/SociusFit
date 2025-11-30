@@ -20,7 +20,8 @@ class SociusFitApplication : Application() {
                 networkModule,
                 repositoryModule,
                 domainModule,
-                presentationModule
+                presentationModule,
+                useCaseModule
             )
         }
 

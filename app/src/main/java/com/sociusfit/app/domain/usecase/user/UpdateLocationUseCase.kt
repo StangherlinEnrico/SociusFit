@@ -6,7 +6,7 @@ import com.sociusfit.app.domain.repository.UserRepository
 import timber.log.Timber
 
 /**
- * Use case for updating user location
+ * 🔥 FIXED: Use case for updating user location settings
  * Handles validation and business logic for location updates
  */
 class UpdateLocationUseCase(
@@ -14,44 +14,40 @@ class UpdateLocationUseCase(
 ) {
     /**
      * Execute location update
-     * @param latitude Latitude coordinate (-90 to 90)
-     * @param longitude Longitude coordinate (-180 to 180)
+     * @param locationCode Municipality ISTAT code (e.g., "026086" for Treviso)
      * @param maxDistance Maximum distance for matching in kilometers (1-500)
      * @return Result with updated User or error
      */
     suspend operator fun invoke(
-        latitude: Double,
-        longitude: Double,
-        maxDistance: Int
+        locationCode: String?,
+        maxDistance: Int?
     ): Result<User> {
-        // Validate latitude
-        if (latitude < -90.0 || latitude > 90.0) {
-            Timber.w("Update location failed: Invalid latitude: $latitude")
-            return Result.Error("Latitude must be between -90 and 90")
+        // Validate location code if provided
+        if (locationCode != null && locationCode.isNotBlank()) {
+            // ISTAT codes are 6 digits
+            if (!locationCode.matches(Regex("^\\d{6}$"))) {
+                Timber.w("Update location failed: Invalid location code format: $locationCode")
+                return Result.Error("Invalid location code format")
+            }
         }
 
-        // Validate longitude
-        if (longitude < -180.0 || longitude > 180.0) {
-            Timber.w("Update location failed: Invalid longitude: $longitude")
-            return Result.Error("Longitude must be between -180 and 180")
-        }
+        // Validate max distance if provided
+        if (maxDistance != null) {
+            if (maxDistance < 1) {
+                Timber.w("Update location failed: Max distance too small: $maxDistance")
+                return Result.Error("Maximum distance must be at least 1 km")
+            }
 
-        // Validate max distance
-        if (maxDistance < 1) {
-            Timber.w("Update location failed: Max distance too small: $maxDistance")
-            return Result.Error("Maximum distance must be at least 1 km")
-        }
-
-        if (maxDistance > 500) {
-            Timber.w("Update location failed: Max distance too large: $maxDistance")
-            return Result.Error("Maximum distance cannot exceed 500 km")
+            if (maxDistance > 500) {
+                Timber.w("Update location failed: Max distance too large: $maxDistance")
+                return Result.Error("Maximum distance cannot exceed 500 km")
+            }
         }
 
         // All validations passed, proceed with update
         Timber.d("Validation passed, proceeding with location update")
         return userRepository.updateLocation(
-            latitude = latitude,
-            longitude = longitude,
+            locationCode = locationCode?.trim(),
             maxDistance = maxDistance
         )
     }

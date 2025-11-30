@@ -29,7 +29,7 @@ interface UserApiService {
     ): Response<ApiResult<UserDto>>
 
     /**
-     * Update current user profile
+     * Update current user profile (ONLY firstName and lastName)
      * PUT /api/v1/users/me/profile
      */
     @PUT("api/v1/users/me/profile")
@@ -38,7 +38,8 @@ interface UserApiService {
     ): Response<ApiResult<UserDto>>
 
     /**
-     * Update current user location
+     * 🔥 FIXED: Update current user location settings
+     * Backend expects municipalityCode (ISTAT code) in location field
      * PUT /api/v1/users/me/location
      */
     @PUT("api/v1/users/me/location")
@@ -56,18 +57,19 @@ interface UserApiService {
 
 /**
  * Request DTO for updating user profile
+ * Backend expects ONLY firstName and lastName
  */
 data class UpdateProfileRequest(
     val firstName: String,
-    val lastName: String,
-    val location: String? = null
+    val lastName: String
 )
 
 /**
- * Request DTO for updating user location
+ * 🔥 FIXED: Request DTO for updating user location
+ * Backend expects municipalityCode (ISTAT code) as "location"
+ * Example: location = "026086" (Treviso)
  */
 data class UpdateLocationRequest(
-    val latitude: Double,
-    val longitude: Double,
-    val maxDistance: Int
+    val location: String?,  // Municipality ISTAT code (e.g., "026086")
+    val maxDistance: Int?
 )
