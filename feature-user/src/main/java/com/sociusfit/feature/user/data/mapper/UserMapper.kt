@@ -8,6 +8,7 @@ fun UserDto.toDomain(): User = User(
     firstName = firstName,
     lastName = lastName,
     email = email,
+    profileComplete = profileComplete,
     createdAt = createdAt,
     updatedAt = updatedAt
 )

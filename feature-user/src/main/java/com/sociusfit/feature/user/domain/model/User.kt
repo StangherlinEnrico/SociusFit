@@ -5,6 +5,7 @@ data class User(
     val firstName: String,
     val lastName: String,
     val email: String,
-    val createdAt: String,
-    val updatedAt: String
+    val profileComplete: Boolean,
+    val createdAt: String? = null,
+    val updatedAt: String? = null
 )

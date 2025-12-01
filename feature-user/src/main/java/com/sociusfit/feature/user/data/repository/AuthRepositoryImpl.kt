@@ -23,53 +23,131 @@ class AuthRepositoryImpl(
         password: String
     ): Result<User> {
         return try {
+            Timber.d("🔵 Register request: email=$email, firstName=$firstName")
+
             val response = authApiService.register(
                 RegisterRequestDto(firstName, lastName, email, password)
             )
 
-            if (response.isSuccessful && response.body()?.isSuccess == true) {
-                val authResponse = response.body()!!.data!!
+            Timber.d("🔵 Response code: ${response.code()}")
+            Timber.d("🔵 Response successful: ${response.isSuccessful}")
+
+            if (response.isSuccessful) {
+                val authResponse = response.body()
+
+                if (authResponse == null) {
+                    Timber.e("❌ Response body is null!")
+                    return Result.Error("Risposta del server non valida")
+                }
+
+                Timber.d("🔵 Token: ${authResponse.token.take(20)}...")
+                Timber.d("🔵 User: ${authResponse.user.email}")
+
+                if (authResponse.token.isBlank()) {
+                    Timber.e("❌ Token is blank!")
+                    return Result.Error("Token non valido ricevuto dal server")
+                }
+
+                // Salva token
                 tokenDataSource.saveToken(authResponse.token)
-                Result.Success(authResponse.user.toDomain())
+
+                // Converti user in domain model
+                val user = authResponse.user.toDomain()
+
+                Timber.d("✅ Registration successful: user=${user.email}")
+                Result.Success(user)
+
             } else {
-                val errors = response.body()?.errors ?: listOf("Errore durante la registrazione")
-                Result.Error(errors.firstOrNull() ?: "Errore durante la registrazione")
+                // Errore HTTP
+                val errorMsg = when (response.code()) {
+                    400 -> "Dati non validi"
+                    409 -> "Email già registrata"
+                    500 -> "Errore del server"
+                    else -> "Errore durante la registrazione"
+                }
+
+                Timber.e("❌ HTTP ${response.code()}: $errorMsg")
+                Result.Error(errorMsg)
             }
         } catch (e: Exception) {
-            Timber.e(e, "Register error")
+            Timber.e(e, "💥 Register exception")
             Result.Error(e.message ?: "Errore di connessione")
         }
     }
 
     override suspend fun login(email: String, password: String): Result<User> {
         return try {
+            Timber.d("🔵 Login request: email=$email")
+
             val response = authApiService.login(LoginRequestDto(email, password))
 
-            if (response.isSuccessful && response.body()?.isSuccess == true) {
-                val authResponse = response.body()!!.data!!
+            Timber.d("🔵 Response code: ${response.code()}")
+            Timber.d("🔵 Response successful: ${response.isSuccessful}")
+
+            if (response.isSuccessful) {
+                val authResponse = response.body()
+
+                if (authResponse == null) {
+                    Timber.e("❌ Response body is null!")
+                    return Result.Error("Risposta del server non valida")
+                }
+
+                // Salva token
                 tokenDataSource.saveToken(authResponse.token)
-                Result.Success(authResponse.user.toDomain())
+
+                // Converti user in domain model
+                val user = authResponse.user.toDomain()
+
+                Timber.d("✅ Login successful: user=${user.email}")
+                Result.Success(user)
+
             } else {
-                val errors = response.body()?.errors ?: listOf("Email o password non corretti")
-                Result.Error(errors.firstOrNull() ?: "Email o password non corretti")
+                val errorMsg = when (response.code()) {
+                    401 -> "Email o password non corretti"
+                    404 -> "Utente non trovato"
+                    500 -> "Errore del server"
+                    else -> "Errore durante il login"
+                }
+
+                Timber.e("❌ HTTP ${response.code()}: $errorMsg")
+                Result.Error(errorMsg)
             }
         } catch (e: Exception) {
-            Timber.e(e, "Login error")
+            Timber.e(e, "💥 Login exception")
             Result.Error(e.message ?: "Errore di connessione")
         }
     }
 
     override suspend fun getCurrentUser(): Result<User> {
         return try {
+            Timber.d("🔵 Get current user request")
+
             val response = authApiService.getCurrentUser()
 
-            if (response.isSuccessful && response.body()?.isSuccess == true) {
-                Result.Success(response.body()!!.data!!.toDomain())
+            if (response.isSuccessful) {
+                val userDto = response.body()
+
+                if (userDto == null) {
+                    Timber.e("❌ User data is null!")
+                    return Result.Error("Dati utente non disponibili")
+                }
+
+                val user = userDto.toDomain()
+                Timber.d("✅ Current user: ${user.email}")
+
+                Result.Success(user)
             } else {
-                Result.Error("Sessione scaduta")
+                val errorMsg = when (response.code()) {
+                    401 -> "Sessione scaduta"
+                    404 -> "Utente non trovato"
+                    else -> "Errore nel recupero utente"
+                }
+
+                Timber.e("❌ HTTP ${response.code()}: $errorMsg")
+                Result.Error(errorMsg)
             }
         } catch (e: Exception) {
-            Timber.e(e, "Get current user error")
+            Timber.e(e, "💥 Get current user exception")
             Result.Error(e.message ?: "Errore di connessione")
         }
     }
