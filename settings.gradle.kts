@@ -21,3 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "SociusFit"
 include(":app")
+include(":feature-user")

@@ -6,13 +6,13 @@ plugins {
 }
 
 android {
-    namespace = "com.sociusfit.app"
+    namespace = "com.sociusfit.feature.user"
     compileSdk {
         version = release(36)
     }
 
     defaultConfig {
-        applicationId = "com.sociusfit.app"
+        applicationId = "com.sociusfit.feature.user"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
@@ -37,13 +37,11 @@ android {
             isDebuggable = true
         }
     }
-
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
         isCoreLibraryDesugaringEnabled = true
     }
-
     kotlinOptions {
         jvmTarget = "17"
     }
@@ -60,8 +58,6 @@ android {
 }
 
 dependencies {
-    implementation(project(":feature-user"))
-
     // Core Android
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

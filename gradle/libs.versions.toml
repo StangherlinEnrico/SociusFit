@@ -47,6 +47,8 @@ espressoCore = "3.7.0"
 mockk = "1.14.6"
 turbine = "1.2.1"
 coroutinesTest = "1.10.2"
+appcompat = "1.6.1"
+material = "1.10.0"
 
 [libraries]
 # Core Android
@@ -106,6 +108,8 @@ androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "j
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
