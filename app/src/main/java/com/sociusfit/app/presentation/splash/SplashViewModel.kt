@@ -2,7 +2,7 @@ package com.sociusfit.app.presentation.splash
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sociusfit.app.domain.usecase.auth.CheckLoginStatusUseCase
+import com.sociusfit.feature.user.data.local.TokenDataSource
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -10,13 +10,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-sealed class SplashDestination {
-    object Login : SplashDestination()
-    object Profile : SplashDestination()
-}
-
 class SplashViewModel(
-    private val checkLoginStatusUseCase: CheckLoginStatusUseCase
+    private val tokenDataSource: TokenDataSource
 ) : ViewModel() {
 
     private val _destination = MutableStateFlow<SplashDestination?>(null)
@@ -28,20 +23,22 @@ class SplashViewModel(
 
     private fun checkAuthenticationStatus() {
         viewModelScope.launch {
-            // Delay per mostrare splash screen
-            delay(1500)
+            try {
+                // Delay minimo per mostrare lo splash
+                delay(1500)
 
-            Timber.d("Checking authentication status")
+                val token = tokenDataSource.getToken()
 
-            // Controlla se l'utente ha un token salvato
-            val isLoggedIn = checkLoginStatusUseCase()
-
-            _destination.value = if (isLoggedIn) {
-                Timber.i("User is logged in, navigating to Profile")
-                SplashDestination.Profile
-            } else {
-                Timber.i("User is not logged in, navigating to Login")
-                SplashDestination.Login
+                _destination.value = if (token != null) {
+                    Timber.d("Token found, navigating to Profile")
+                    SplashDestination.Profile
+                } else {
+                    Timber.d("No token found, navigating to Login")
+                    SplashDestination.Login
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Error checking authentication status")
+                _destination.value = SplashDestination.Login
             }
         }
     }

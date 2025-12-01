@@ -1,7 +1,8 @@
 package com.sociusfit.app
 
 import android.app.Application
-import com.sociusfit.app.di.*
+import com.sociusfit.app.di.appModule
+import com.sociusfit.app.di.networkModule
 import com.sociusfit.feature.user.di.userModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
@@ -12,21 +13,19 @@ class SociusFitApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        Timber.plant(Timber.DebugTree())
+        if (Constants.DEBUG) {
+            Timber.plant(Timber.DebugTree())
+        }
 
         startKoin {
             androidContext(this@SociusFitApplication)
             modules(
-                userModule,
-                dataModule,
+                appModule,
                 networkModule,
-                repositoryModule,
-                domainModule,
-                presentationModule,
-                useCaseModule
+                userModule
             )
         }
 
-        Timber.d("SociusFit Application started with Koin")
+        Timber.d("SociusFit Application started")
     }
 }

@@ -2,7 +2,6 @@ package com.sociusfit.app.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Light Theme Colors
 val Primary = Color(0xFF6750A4)
 val OnPrimary = Color(0xFFFFFFFF)
 val PrimaryContainer = Color(0xFFEADDFF)
@@ -33,7 +32,6 @@ val OnSurfaceVariant = Color(0xFF49454F)
 val Outline = Color(0xFF79747E)
 val OutlineVariant = Color(0xFFCAC4D0)
 
-// Dark Theme Colors
 val DarkPrimary = Color(0xFFD0BCFF)
 val DarkOnPrimary = Color(0xFF381E72)
 val DarkPrimaryContainer = Color(0xFF4F378B)
@@ -63,10 +61,3 @@ val DarkOnSurfaceVariant = Color(0xFFCAC4D0)
 
 val DarkOutline = Color(0xFF938F99)
 val DarkOutlineVariant = Color(0xFF49454F)
-
-// Custom colors for SociusFit
-val SportGreen = Color(0xFF4CAF50)
-val SportBlue = Color(0xFF2196F3)
-val MatchOrange = Color(0xFFFF9800)
-val LikeGreen = Color(0xFF66BB6A)
-val DislikeRed = Color(0xFFEF5350)

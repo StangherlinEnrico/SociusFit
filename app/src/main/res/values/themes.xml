@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <style name="Theme.SociusFit" parent="android:Theme.Material.Light.NoActionBar" />
+    <!--
+        Theme for SociusFit - Material 3 Only
+        All theming is done in Compose with MaterialTheme
+    -->
+    <style name="Theme.SociusFit" parent="android:Theme.Material.Light.NoActionBar">
+        <!-- No custom attributes needed - using Compose Material3 -->
+    </style>
 </resources>
