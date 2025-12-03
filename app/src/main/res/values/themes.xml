@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!--
-        Theme for SociusFit - Material 3 Only
-        All theming is done in Compose with MaterialTheme
-    -->
-    <style name="Theme.SociusFit" parent="android:Theme.Material.Light.NoActionBar">
-        <!-- No custom attributes needed - using Compose Material3 -->
+    <!-- Tema base per l'app -->
+    <style name="Theme.SociusFit" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+
+    <!-- Splash screen theme -->
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@android:color/white</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="postSplashScreenTheme">@style/Theme.SociusFit</item>
     </style>
 </resources>
