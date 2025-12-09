@@ -8,8 +8,11 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "sociusfit_prefs")
 
@@ -22,14 +25,14 @@ class PreferencesManager(private val context: Context) {
         val NOTIFICATIONS_ENABLED = booleanPreferencesKey("notifications_enabled")
     }
 
-    suspend fun saveToken(token: String) {
+    suspend fun saveToken(token: String) = withContext(Dispatchers.IO) {
         context.dataStore.edit { prefs ->
             prefs[Keys.AUTH_TOKEN] = token
         }
     }
 
-    suspend fun getToken(): String? {
-        return context.dataStore.data.map { prefs ->
+    suspend fun getToken(): String? = withContext(Dispatchers.IO) {
+        context.dataStore.data.map { prefs ->
             prefs[Keys.AUTH_TOKEN]
         }.first()
     }
@@ -40,26 +43,26 @@ class PreferencesManager(private val context: Context) {
         }
     }
 
-    suspend fun saveUserId(userId: String) {
+    suspend fun saveUserId(userId: String) = withContext(Dispatchers.IO) {
         context.dataStore.edit { prefs ->
             prefs[Keys.USER_ID] = userId
         }
     }
 
-    suspend fun getUserId(): String? {
-        return context.dataStore.data.map { prefs ->
+    suspend fun getUserId(): String? = withContext(Dispatchers.IO) {
+        context.dataStore.data.map { prefs ->
             prefs[Keys.USER_ID]
         }.first()
     }
 
-    suspend fun clearAuth() {
+    suspend fun clearAuth() = withContext(Dispatchers.IO) {
         context.dataStore.edit { prefs ->
             prefs.remove(Keys.AUTH_TOKEN)
             prefs.remove(Keys.USER_ID)
         }
     }
 
-    suspend fun saveMaxDistance(distance: Int) {
+    suspend fun saveMaxDistance(distance: Int) = withContext(Dispatchers.IO) {
         context.dataStore.edit { prefs ->
             prefs[Keys.MAX_DISTANCE] = distance
         }
@@ -71,7 +74,7 @@ class PreferencesManager(private val context: Context) {
         }
     }
 
-    suspend fun setNotificationsEnabled(enabled: Boolean) {
+    suspend fun setNotificationsEnabled(enabled: Boolean) = withContext(Dispatchers.IO) {
         context.dataStore.edit { prefs ->
             prefs[Keys.NOTIFICATIONS_ENABLED] = enabled
         }
@@ -82,13 +85,4 @@ class PreferencesManager(private val context: Context) {
             prefs[Keys.NOTIFICATIONS_ENABLED] ?: true
         }
     }
-}
-
-private suspend fun <T> Flow<T>.first(): T {
-    var result: T? = null
-    collect { value ->
-        result = value
-        return@collect
-    }
-    return result!!
 }

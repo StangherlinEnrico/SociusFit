@@ -4,6 +4,7 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.sociusfit.core.network.interceptor.AuthInterceptor
 import com.sociusfit.core.network.interceptor.ErrorHandlingInterceptor
+import com.sociusfit.core.network.interceptor.LoggingInterceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -27,9 +28,7 @@ object RetrofitProvider {
             .addInterceptor(ErrorHandlingInterceptor())
             .apply {
                 if (isDebug) {
-                    addInterceptor(HttpLoggingInterceptor().apply {
-                        level = HttpLoggingInterceptor.Level.BODY
-                    })
+                    addInterceptor(LoggingInterceptor())
                 }
             }
             .build()

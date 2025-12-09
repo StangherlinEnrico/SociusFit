@@ -1,32 +1,35 @@
 package com.sociusfit.app
 
 import android.app.Application
-import android.content.pm.ApplicationInfo
-import com.sociusfit.app.di.appModule
 import com.sociusfit.app.di.networkModule
 import com.sociusfit.app.di.storageModule
+import com.sociusfit.feature.auth.di.authModule
 import org.koin.android.ext.koin.androidContext
-import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
-import org.koin.core.logger.Level
 import timber.log.Timber
 
 class SociusFitApplication : Application() {
+
     override fun onCreate() {
         super.onCreate()
 
-        if ((applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
-            Timber.plant(Timber.DebugTree())
-        }
+        // Inizializza Timber
+        Timber.plant(Timber.DebugTree())
 
+        Timber.d("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        Timber.d("SociusFit App Starting...")
+        Timber.d("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+
+        // Inizializza Koin
         startKoin {
-            androidLogger(Level.ERROR)
             androidContext(this@SociusFitApplication)
             modules(
                 networkModule,
                 storageModule,
-                appModule
+                authModule
             )
         }
+
+        Timber.d("Koin modules loaded")
     }
 }

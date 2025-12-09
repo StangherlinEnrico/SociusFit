@@ -2,35 +2,55 @@ package com.sociusfit.app.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.sociusfit.app.ui.screens.SplashScreen
 
+/**
+ * SociusFit Navigation Host
+ *
+ * Gestisce la navigazione principale dell'app.
+ * Punto di ingresso della navigazione con Auth graph.
+ */
 @Composable
 fun SociusFitNavHost(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navController: NavHostController = rememberNavController(),
+    startDestination: String = "auth"
 ) {
-    val navController = rememberNavController()
-
     NavHost(
         navController = navController,
-        startDestination = Routes.SPLASH,
+        startDestination = startDestination,
         modifier = modifier
     ) {
-        composable(Routes.SPLASH) {
-            SplashScreen(
-                onNavigateToLogin = {
-                    navController.navigate(Routes.LOGIN) {
-                        popUpTo(Routes.SPLASH) { inclusive = true }
-                    }
-                },
-                onNavigateToHome = {
-                    navController.navigate(Routes.HOME) {
-                        popUpTo(Routes.SPLASH) { inclusive = true }
-                    }
+        // Auth Navigation Graph
+        authNavGraph(
+            navController = navController,
+            onNavigateToHome = {
+                navController.navigate("home") {
+                    // Rimuovi auth graph dallo stack quando vai a home
+                    popUpTo("auth") { inclusive = true }
                 }
-            )
+            },
+            onNavigateToOnboarding = {
+                navController.navigate("onboarding") {
+                    // Rimuovi auth graph dallo stack quando vai a onboarding
+                    popUpTo("auth") { inclusive = true }
+                }
+            }
+        )
+
+        // TODO: Home Navigation Graph (Sprint 3)
+        composable("home") {
+            // Placeholder per home
+            // HomeScreen()
+        }
+
+        // TODO: Onboarding Navigation Graph (Sprint 2)
+        composable("onboarding") {
+            // Placeholder per onboarding
+            // OnboardingNavGraph()
         }
     }
 }
