@@ -7,16 +7,14 @@ import androidx.navigation.navigation
 import com.sociusfit.app.ui.auth.LoginScreen
 import com.sociusfit.app.ui.auth.RegisterScreen
 import com.sociusfit.app.ui.auth.SplashScreen
-import com.sociusfit.feature.auth.presentation.login.LoginViewModel
-import com.sociusfit.feature.auth.presentation.register.RegisterViewModel
-import com.sociusfit.feature.auth.presentation.splash.SplashViewModel
 import org.koin.androidx.compose.koinViewModel
+import timber.log.Timber
 
 /**
  * Auth Navigation Graph
  *
  * Gestisce la navigazione del modulo Auth.
- * Le Screen Composable sono in :app, i ViewModel sono iniettati da Koin qui.
+ * Flow: Splash → Login/Register → Home/Onboarding
  */
 fun NavGraphBuilder.authNavGraph(
     navController: NavHostController,
@@ -24,49 +22,74 @@ fun NavGraphBuilder.authNavGraph(
     onNavigateToOnboarding: () -> Unit
 ) {
     navigation(
-        startDestination = "splash",
-        route = "auth"
+        startDestination = AppRoutes.SPLASH,
+        route = AppRoutes.AUTH_GRAPH
     ) {
-        // Splash Screen
-        composable("splash") {
-            val viewModel = koinViewModel<SplashViewModel>()
+
+        // ============================================
+        // SPLASH SCREEN
+        // ============================================
+        composable(AppRoutes.SPLASH) {
+            Timber.d("Navigate to SplashScreen")
 
             SplashScreen(
+                viewModel = koinViewModel(),
                 onNavigateToLogin = {
-                    navController.navigate("login") {
-                        popUpTo("splash") { inclusive = true }
+                    Timber.d("Splash → Login")
+                    navController.navigate(AppRoutes.LOGIN) {
+                        popUpTo(AppRoutes.SPLASH) { inclusive = true }
                     }
                 },
-                onNavigateToHome = onNavigateToHome,
-                onNavigateToOnboarding = onNavigateToOnboarding,
-                viewModel = viewModel
+                onNavigateToHome = {
+                    Timber.d("Splash → Home (token valid)")
+                    onNavigateToHome()
+                },
+                onNavigateToOnboarding = {
+                    Timber.d("Splash → Onboarding (profile incomplete)")
+                    onNavigateToOnboarding()
+                }
             )
         }
 
-        // Login Screen
-        composable("login") {
-            val viewModel = koinViewModel<LoginViewModel>()
+        // ============================================
+        // LOGIN SCREEN
+        // ============================================
+        composable(AppRoutes.LOGIN) {
+            Timber.d("Navigate to LoginScreen")
 
             LoginScreen(
+                viewModel = koinViewModel(),
                 onNavigateToRegister = {
-                    navController.navigate("register")
+                    Timber.d("Login → Register")
+                    navController.navigate(AppRoutes.REGISTER)
                 },
-                onNavigateToHome = onNavigateToHome,
-                onNavigateToOnboarding = onNavigateToOnboarding,
-                viewModel = viewModel
+                onNavigateToHome = {
+                    Timber.d("Login → Home (profile complete)")
+                    onNavigateToHome()
+                },
+                onNavigateToOnboarding = {
+                    Timber.d("Login → Onboarding (profile incomplete)")
+                    onNavigateToOnboarding()
+                }
             )
         }
 
-        // Register Screen
-        composable("register") {
-            val viewModel = koinViewModel<RegisterViewModel>()
+        // ============================================
+        // REGISTER SCREEN
+        // ============================================
+        composable(AppRoutes.REGISTER) {
+            Timber.d("Navigate to RegisterScreen")
 
             RegisterScreen(
+                viewModel = koinViewModel(),
                 onNavigateToLogin = {
+                    Timber.d("Register → Login (back)")
                     navController.popBackStack()
                 },
-                onNavigateToOnboarding = onNavigateToOnboarding,
-                viewModel = viewModel
+                onNavigateToOnboarding = {
+                    Timber.d("Register → Onboarding")
+                    onNavigateToOnboarding()
+                }
             )
         }
     }

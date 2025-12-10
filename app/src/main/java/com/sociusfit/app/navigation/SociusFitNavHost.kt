@@ -4,53 +4,76 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.sociusfit.app.ui.profile.navigation.addProfileNavigation
+import com.sociusfit.app.ui.profile.navigation.navigateToOnboarding
+import com.sociusfit.app.ui.profile.navigation.navigateToProfile
+import timber.log.Timber
 
 /**
  * SociusFit Navigation Host
  *
- * Gestisce la navigazione principale dell'app.
- * Punto di ingresso della navigazione con Auth graph.
+ * Entry point della navigazione dell'app.
+ * Responsabilità:
+ * - Gestisce il NavHost principale
+ * - Collega tutti i navigation graphs (Auth, Profile, Discovery, Match, Chat)
+ * - Determina la start destination
  */
 @Composable
 fun SociusFitNavHost(
     modifier: Modifier = Modifier,
-    navController: NavHostController = rememberNavController(),
-    startDestination: String = "auth"
+    navController: NavHostController = rememberNavController()
 ) {
+    Timber.d("SociusFitNavHost initialized")
+
     NavHost(
         navController = navController,
-        startDestination = startDestination,
+        startDestination = AppRoutes.AUTH_GRAPH,
         modifier = modifier
     ) {
-        // Auth Navigation Graph
+
+        // ============================================
+        // AUTH NAVIGATION GRAPH
+        // ============================================
         authNavGraph(
             navController = navController,
             onNavigateToHome = {
-                navController.navigate("home") {
-                    // Rimuovi auth graph dallo stack quando vai a home
-                    popUpTo("auth") { inclusive = true }
-                }
+                Timber.d("Navigate to Home (profile complete)")
+                // Se profileComplete = true → Profile screen
+                // TODO Sprint 3: Implement Home with bottom navigation
+                navController.navigateToProfile()
             },
             onNavigateToOnboarding = {
-                navController.navigate("onboarding") {
-                    // Rimuovi auth graph dallo stack quando vai a onboarding
-                    popUpTo("auth") { inclusive = true }
-                }
+                Timber.d("Navigate to Onboarding (profile incomplete)")
+                // Se profileComplete = false → Onboarding
+                navController.navigateToOnboarding()
             }
         )
 
-        // TODO: Home Navigation Graph (Sprint 3)
-        composable("home") {
-            // Placeholder per home
-            // HomeScreen()
-        }
+        // ============================================
+        // PROFILE NAVIGATION MODULE
+        // ============================================
+        addProfileNavigation(
+            navController = navController,
+            onLogout = {
+                Timber.d("User logged out, clearing state and navigate to Login")
+                // Pulisci lo stato di autenticazione
+                AuthStateManager.clearUser()
+                // Naviga direttamente a Login (non Splash!)
+                navController.navigate(AppRoutes.LOGIN) {
+                    popUpTo(0) { inclusive = true }
+                }
+            },
+            getUserId = {
+                AuthStateManager.getUserId()
+            },
+            getUserName = {
+                AuthStateManager.getUserName()
+            }
+        )
 
-        // TODO: Onboarding Navigation Graph (Sprint 2)
-        composable("onboarding") {
-            // Placeholder per onboarding
-            // OnboardingNavGraph()
-        }
+        // TODO Sprint 3: Add Discovery Navigation
+        // TODO Sprint 4: Add Match Navigation
+        // TODO Sprint 5: Add Chat Navigation
     }
 }

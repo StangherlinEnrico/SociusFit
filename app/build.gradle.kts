@@ -61,6 +61,7 @@ dependencies {
     implementation(project(":core:storage"))
     implementation(project(":core:ui"))
     implementation(project(":feature:auth"))
+    implementation(project(":feature:profile"))
 
     implementation(libs.androidx.core.splashscreen)
 
