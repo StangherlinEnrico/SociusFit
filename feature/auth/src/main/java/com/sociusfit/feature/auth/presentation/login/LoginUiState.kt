@@ -3,8 +3,7 @@ package com.sociusfit.feature.auth.presentation.login
 /**
  * Login UI State
  *
- * Rappresenta lo stato della schermata di login.
- * Immutable data class per garantire unidirectional data flow.
+ * Rappresenta lo stato della UI della schermata di login.
  */
 data class LoginUiState(
     val email: String = "",
@@ -15,8 +14,10 @@ data class LoginUiState(
     val emailError: String? = null
 ) {
     /**
-     * Form valido se email e password sono compilati
+     * Verifica se il form è valido per la submission
      */
     val isFormValid: Boolean
-        get() = email.isNotBlank() && password.isNotBlank() && isEmailValid
+        get() = email.isNotBlank() &&
+                password.isNotBlank() &&
+                isEmailValid
 }

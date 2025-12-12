@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sociusfit.core.domain.Result
+import com.sociusfit.feature.profile.data.repository.OnboardingRepository
 import com.sociusfit.feature.profile.domain.model.Profile
 import com.sociusfit.feature.profile.domain.model.ProfileSport
 import com.sociusfit.feature.profile.domain.usecase.CreateProfileUseCase
@@ -17,10 +18,14 @@ import java.io.File
 
 /**
  * ViewModel per il terzo step dell'onboarding (foto profilo)
+ *
+ * AGGIORNATO: Non invia latitude/longitude - il backend fa geocoding
+ * tramite OpenStreetMap Nominatim quando riceve città nel formato "Comune, Regione"
  */
 class OnboardingPhotoViewModel(
     private val uploadPhotoUseCase: UploadPhotoUseCase,
-    private val createProfileUseCase: CreateProfileUseCase
+    private val createProfileUseCase: CreateProfileUseCase,
+    private val onboardingRepository: OnboardingRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(OnboardingPhotoUiState())
@@ -30,25 +35,25 @@ class OnboardingPhotoViewModel(
         _uiState.update { it.copy(photoUri = uri, error = null) }
     }
 
-    fun onSkip(profileData: ProfileData) {
-        completeOnboarding(profileData, photoUrl = null)
+    fun onSkip() {
+        completeOnboarding(photoUrl = null)
     }
 
-    fun onComplete(profileData: ProfileData, photoFile: File?) {
+    fun onComplete(photoFile: File?) {
         if (photoFile != null) {
-            uploadPhotoAndComplete(profileData, photoFile)
+            uploadPhotoAndComplete(photoFile)
         } else {
-            completeOnboarding(profileData, photoUrl = null)
+            completeOnboarding(photoUrl = null)
         }
     }
 
-    private fun uploadPhotoAndComplete(profileData: ProfileData, photoFile: File) {
+    private fun uploadPhotoAndComplete(photoFile: File) {
         viewModelScope.launch {
             _uiState.update { it.copy(isUploading = true, error = null) }
 
             when (val result = uploadPhotoUseCase(photoFile)) {
                 is Result.Success -> {
-                    completeOnboarding(profileData, photoUrl = result.data)
+                    completeOnboarding(photoUrl = result.data)
                 }
                 is Result.Error -> {
                     _uiState.update {
@@ -65,26 +70,64 @@ class OnboardingPhotoViewModel(
         }
     }
 
-    private fun completeOnboarding(profileData: ProfileData, photoUrl: String?) {
+    private fun completeOnboarding(photoUrl: String?) {
         viewModelScope.launch {
             _uiState.update { it.copy(isUploading = true) }
 
+            // Recupera tutti i dati dal repository
+            val onboardingData = onboardingRepository.getCompleteData()
+
+            // Valida che tutti i dati necessari siano presenti
+            if (!onboardingData.isComplete) {
+                _uiState.update {
+                    it.copy(
+                        isUploading = false,
+                        error = "Dati onboarding incompleti. Torna indietro e completa tutti i campi."
+                    )
+                }
+                return@launch
+            }
+
+            // Salva la foto URL nel repository
+            if (photoUrl != null) {
+                onboardingRepository.savePhotoData(photoUrl)
+            }
+
+            // Determina il formato città da inviare al backend
+            // Se abbiamo il Municipality completo, usa il formato "Comune, Regione"
+            // Altrimenti usa il nome semplice della città
+            val cityForBackend = onboardingData.municipality?.formattedForBackend
+                ?: onboardingData.city!!
+
+            // Crea il profilo completo
+            // NOTA: Inviamo città nel formato "Milano, Lombardia"
+            // Il backend farà geocoding automatico con OpenStreetMap Nominatim
             val profile = Profile(
-                userId = profileData.userId,
-                firstName = profileData.firstName,
-                lastName = profileData.lastName,
-                age = profileData.age,
-                city = profileData.city,
-                latitude = profileData.latitude,
-                longitude = profileData.longitude,
-                bio = profileData.bio,
-                maxDistance = profileData.maxDistance,
+                userId = "", // Sarà popolato dal backend
+                firstName = "", // Sarà popolato dal backend
+                lastName = "", // Sarà popolato dal backend
+                age = onboardingData.age!!,
+                city = cityForBackend,  // Formato: "Milano, Lombardia"
+                latitude = 0.0,  // Backend farà geocoding e sovrascriverà
+                longitude = 0.0,  // Backend farà geocoding e sovrascriverà
+                bio = onboardingData.bio,
+                maxDistance = onboardingData.maxDistance,
                 photoUrl = photoUrl,
-                sports = profileData.sports
+                sports = onboardingData.selectedSports.map { (sportId, level) ->
+                    ProfileSport(
+                        sportId = sportId,
+                        sportName = "", // Sarà popolato dal backend
+                        level = level
+                    )
+                }
             )
 
+            // Invia al backend
             when (val result = createProfileUseCase(profile)) {
                 is Result.Success -> {
+                    // Cancella dati temporanei
+                    onboardingRepository.clear()
+
                     _uiState.update {
                         it.copy(
                             isUploading = false,
@@ -114,20 +157,4 @@ data class OnboardingPhotoUiState(
     val isUploading: Boolean = false,
     val isComplete: Boolean = false,
     val error: String? = null
-)
-
-/**
- * Data class per passare i dati tra gli step dell'onboarding
- */
-data class ProfileData(
-    val userId: String,
-    val firstName: String,
-    val lastName: String,
-    val age: Int,
-    val city: String,
-    val latitude: Double,
-    val longitude: Double,
-    val bio: String,
-    val maxDistance: Int,
-    val sports: List<ProfileSport>
 )

@@ -3,6 +3,7 @@ package com.sociusfit.feature.profile.presentation.onboarding.sports
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sociusfit.core.domain.Result
+import com.sociusfit.feature.profile.data.repository.OnboardingRepository
 import com.sociusfit.feature.profile.domain.model.Sport
 import com.sociusfit.feature.profile.domain.model.SportLevel
 import com.sociusfit.feature.profile.domain.usecase.GetAllSportsUseCase
@@ -14,9 +15,12 @@ import kotlinx.coroutines.launch
 
 /**
  * ViewModel per il secondo step dell'onboarding (selezione sport)
+ *
+ * AGGIORNATO: Salva i dati in OnboardingRepository
  */
 class OnboardingSportsViewModel(
-    private val getAllSportsUseCase: GetAllSportsUseCase
+    private val getAllSportsUseCase: GetAllSportsUseCase,
+    private val onboardingRepository: OnboardingRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(OnboardingSportsUiState())
@@ -24,6 +28,16 @@ class OnboardingSportsViewModel(
 
     init {
         loadSports()
+
+        // Ripristina sport selezionati se presenti (tornando indietro)
+        viewModelScope.launch {
+            val savedData = onboardingRepository.onboardingData.value
+            if (savedData.selectedSports.isNotEmpty()) {
+                _uiState.update {
+                    it.copy(selectedSports = savedData.selectedSports)
+                }
+            }
+        }
     }
 
     private fun loadSports() {
@@ -61,14 +75,11 @@ class OnboardingSportsViewModel(
 
             // Max 5 sport
             if (currentSelections.size >= 5 && sportId !in currentSelections) {
-                return@update state.copy(error = "Puoi selezionare massimo 5 sport")
+                return@update state
             }
 
             currentSelections[sportId] = level
-            state.copy(
-                selectedSports = currentSelections,
-                error = null
-            )
+            state.copy(selectedSports = currentSelections)
         }
     }
 
@@ -80,16 +91,21 @@ class OnboardingSportsViewModel(
         }
     }
 
-    fun onContinue() {
+    /**
+     * Salva i dati nel repository prima di continuare
+     */
+    fun saveAndContinue(): Boolean {
         val state = _uiState.value
 
+        // Validazione: almeno 1 sport
         if (state.selectedSports.isEmpty()) {
-            _uiState.update { it.copy(error = "Devi selezionare almeno 1 sport") }
-            return
+            return false
         }
 
-        // Naviga al prossimo step
-        // Questo sarà gestito dalla UI
+        // Salva nel repository
+        onboardingRepository.saveSportsData(state.selectedSports)
+
+        return true
     }
 }
 

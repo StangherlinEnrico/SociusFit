@@ -13,85 +13,90 @@ import com.sociusfit.feature.auth.presentation.splash.SplashDestination
 import com.sociusfit.feature.auth.presentation.splash.SplashViewModel
 
 /**
- * Splash Screen
+ * Splash Screen - FIXED
  *
  * Prima schermata mostrata all'avvio dell'app.
  * Verifica l'autenticazione e naviga alla schermata appropriata.
  *
- * IMPORTANTE: Il ViewModel deve essere iniettato dall'esterno (:app module).
+ * FLUSSO CORRETTO:
+ * - Nessun token → Login
+ * - Token + profileComplete = false → Onboarding
+ * - Token + profileComplete = true → Profile
  *
  * @param onNavigateToLogin Callback per navigare al login
- * @param onNavigateToHome Callback per navigare alla home
+ * @param onNavigateToProfile Callback per navigare al profilo (era onNavigateToHome)
  * @param onNavigateToOnboarding Callback per navigare all'onboarding
  * @param viewModel ViewModel iniettato dal chiamante
  */
 @Composable
 fun SplashScreen(
     onNavigateToLogin: () -> Unit,
-    onNavigateToHome: () -> Unit,
+    onNavigateToProfile: () -> Unit,  // ← CAMBIATO da onNavigateToHome
     onNavigateToOnboarding: () -> Unit,
-    viewModel: SplashViewModel  // ← NO default parameter!
+    viewModel: SplashViewModel
 ) {
     val destination by viewModel.destination.collectAsStateWithLifecycle()
 
+    // Gestisce la navigazione quando viene decisa la destinazione
     LaunchedEffect(destination) {
         when (destination) {
             SplashDestination.Login -> {
                 onNavigateToLogin()
-                viewModel.onNavigationHandled()
+                viewModel.onNavigationComplete()  // ← CAMBIATO da onNavigationHandled
             }
-            SplashDestination.Home -> {
-                onNavigateToHome()
-                viewModel.onNavigationHandled()
+
+            SplashDestination.Profile -> {  // ← AGGIUNTO (era Home prima)
+                onNavigateToProfile()
+                viewModel.onNavigationComplete()
             }
+
             SplashDestination.Onboarding -> {
                 onNavigateToOnboarding()
-                viewModel.onNavigationHandled()
+                viewModel.onNavigationComplete()
             }
-            null -> { }
+
+            null -> {
+                // Ancora in verifica, non fare nulla
+            }
         }
     }
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.primary
-    ) {
-        Column(
+    // UI Splash Screen
+    Scaffold { paddingValues ->
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(Spacing.large),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .padding(paddingValues),
+            contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = "SF",
-                style = MaterialTheme.typography.displayLarge,
-                color = MaterialTheme.colorScheme.onPrimary
-            )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                // Logo o icona dell'app
+                Text(
+                    text = "SociusFit",
+                    style = MaterialTheme.typography.displayLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
 
-            Spacer(modifier = Modifier.height(Spacing.medium))
+                Spacer(modifier = Modifier.height(Spacing.large))
 
-            Text(
-                text = "SociusFit",
-                style = MaterialTheme.typography.headlineLarge,
-                color = MaterialTheme.colorScheme.onPrimary
-            )
+                // Loading indicator
+                CircularProgressIndicator(
+                    modifier = Modifier.size(48.dp),
+                    color = MaterialTheme.colorScheme.primary
+                )
 
-            Spacer(modifier = Modifier.height(Spacing.small))
+                Spacer(modifier = Modifier.height(Spacing.medium))
 
-            Text(
-                text = "Trova il tuo compagno di sport",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(Spacing.large * 2))
-
-            CircularProgressIndicator(
-                modifier = Modifier.size(48.dp),
-                color = MaterialTheme.colorScheme.onPrimary
-            )
+                Text(
+                    text = "Caricamento...",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
+                )
+            }
         }
     }
 }

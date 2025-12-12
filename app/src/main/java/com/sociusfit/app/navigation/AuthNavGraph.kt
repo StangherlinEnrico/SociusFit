@@ -11,14 +11,14 @@ import org.koin.androidx.compose.koinViewModel
 import timber.log.Timber
 
 /**
- * Auth Navigation Graph
+ * Auth Navigation Graph - FIXED
  *
  * Gestisce la navigazione del modulo Auth.
- * Flow: Splash → Login/Register → Home/Onboarding
+ * Flow: Splash → Login/Register → Profile/Onboarding
  */
 fun NavGraphBuilder.authNavGraph(
     navController: NavHostController,
-    onNavigateToHome: () -> Unit,
+    onNavigateToProfile: () -> Unit,  // ← CAMBIATO da onNavigateToHome
     onNavigateToOnboarding: () -> Unit
 ) {
     navigation(
@@ -40,9 +40,9 @@ fun NavGraphBuilder.authNavGraph(
                         popUpTo(AppRoutes.SPLASH) { inclusive = true }
                     }
                 },
-                onNavigateToHome = {
-                    Timber.d("Splash → Home (token valid)")
-                    onNavigateToHome()
+                onNavigateToProfile = {  // ← CAMBIATO da onNavigateToHome
+                    Timber.d("Splash → Profile (token valid, profile complete)")
+                    onNavigateToProfile()
                 },
                 onNavigateToOnboarding = {
                     Timber.d("Splash → Onboarding (profile incomplete)")
@@ -63,9 +63,9 @@ fun NavGraphBuilder.authNavGraph(
                     Timber.d("Login → Register")
                     navController.navigate(AppRoutes.REGISTER)
                 },
-                onNavigateToHome = {
-                    Timber.d("Login → Home (profile complete)")
-                    onNavigateToHome()
+                onNavigateToProfile = {  // ← CAMBIATO da onNavigateToHome
+                    Timber.d("Login → Profile (profile complete)")
+                    onNavigateToProfile()
                 },
                 onNavigateToOnboarding = {
                     Timber.d("Login → Onboarding (profile incomplete)")

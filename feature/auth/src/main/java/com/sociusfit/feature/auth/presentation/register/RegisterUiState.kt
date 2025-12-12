@@ -3,8 +3,7 @@ package com.sociusfit.feature.auth.presentation.register
 /**
  * Register UI State
  *
- * Rappresenta lo stato della schermata di registrazione.
- * Immutable data class per garantire unidirectional data flow.
+ * Rappresenta lo stato della UI della schermata di registrazione.
  */
 data class RegisterUiState(
     val firstName: String = "",
@@ -16,12 +15,12 @@ data class RegisterUiState(
     val isFirstNameValid: Boolean = true,
     val isLastNameValid: Boolean = true,
     val isEmailValid: Boolean = true,
-    val isPasswordValid: Boolean = true,
     val emailError: String? = null,
+    val isPasswordValid: Boolean = true,
     val passwordError: String? = null
 ) {
     /**
-     * Form valido se tutti i campi sono compilati e validi
+     * Verifica se il form è valido per la submission
      */
     val isFormValid: Boolean
         get() = firstName.isNotBlank() &&

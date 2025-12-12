@@ -14,36 +14,34 @@ import com.sociusfit.core.ui.components.SFButton
 import com.sociusfit.core.ui.components.SFPasswordTextField
 import com.sociusfit.core.ui.components.SFTextField
 import com.sociusfit.core.ui.theme.Spacing
+import com.sociusfit.feature.auth.presentation.login.LoginNavigationEvent
 import com.sociusfit.feature.auth.presentation.login.LoginViewModel
 
 /**
- * Login Screen
- *
- * Schermata di login utente esistente.
- * UI dichiarativa con Jetpack Compose.
- *
- * IMPORTANTE: Il ViewModel deve essere iniettato dall'esterno (:app module)
- * perché Koin Compose non funziona nelle librerie Android.
- *
- * @param onNavigateToRegister Callback per navigare alla registrazione
- * @param onNavigateToHome Callback per navigare alla home dopo login
- * @param onNavigateToOnboarding Callback per navigare all'onboarding
- * @param viewModel ViewModel iniettato dal chiamante
+ * Login Screen - FIXED
  */
 @Composable
 fun LoginScreen(
     onNavigateToRegister: () -> Unit,
-    onNavigateToHome: () -> Unit,
+    onNavigateToProfile: () -> Unit,
     onNavigateToOnboarding: () -> Unit,
-    viewModel: LoginViewModel  // ← NO default parameter!
+    viewModel: LoginViewModel
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val navigationEvent by viewModel.navigationEvent.collectAsStateWithLifecycle()
 
-    // Gestione navigazione dopo login
-    LaunchedEffect(uiState.isLoading) {
-        if (!uiState.isLoading && uiState.error == null &&
-            uiState.email.isNotEmpty()) {
-            onNavigateToHome()
+    // Gestisce navigazione tramite event
+    LaunchedEffect(navigationEvent) {
+        when (navigationEvent) {
+            LoginNavigationEvent.NavigateToProfile -> {
+                onNavigateToProfile()
+                viewModel.onNavigationEventConsumed()
+            }
+            LoginNavigationEvent.NavigateToOnboarding -> {
+                onNavigateToOnboarding()
+                viewModel.onNavigationEventConsumed()
+            }
+            null -> { /* No navigation */ }
         }
     }
 

@@ -11,13 +11,9 @@ import com.sociusfit.app.ui.profile.navigation.navigateToProfile
 import timber.log.Timber
 
 /**
- * SociusFit Navigation Host
+ * SociusFit Navigation Host - FIXED
  *
  * Entry point della navigazione dell'app.
- * Responsabilità:
- * - Gestisce il NavHost principale
- * - Collega tutti i navigation graphs (Auth, Profile, Discovery, Match, Chat)
- * - Determina la start destination
  */
 @Composable
 fun SociusFitNavHost(
@@ -37,15 +33,12 @@ fun SociusFitNavHost(
         // ============================================
         authNavGraph(
             navController = navController,
-            onNavigateToHome = {
-                Timber.d("Navigate to Home (profile complete)")
-                // Se profileComplete = true → Profile screen
-                // TODO Sprint 3: Implement Home with bottom navigation
+            onNavigateToProfile = {  // ← CAMBIATO da onNavigateToHome
+                Timber.d("Navigate to Profile (profile complete)")
                 navController.navigateToProfile()
             },
             onNavigateToOnboarding = {
                 Timber.d("Navigate to Onboarding (profile incomplete)")
-                // Se profileComplete = false → Onboarding
                 navController.navigateToOnboarding()
             }
         )
@@ -57,9 +50,7 @@ fun SociusFitNavHost(
             navController = navController,
             onLogout = {
                 Timber.d("User logged out, clearing state and navigate to Login")
-                // Pulisci lo stato di autenticazione
                 AuthStateManager.clearUser()
-                // Naviga direttamente a Login (non Splash!)
                 navController.navigate(AppRoutes.LOGIN) {
                     popUpTo(0) { inclusive = true }
                 }

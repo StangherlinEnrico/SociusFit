@@ -14,32 +14,29 @@ import com.sociusfit.core.ui.components.SFButton
 import com.sociusfit.core.ui.components.SFPasswordTextField
 import com.sociusfit.core.ui.components.SFTextField
 import com.sociusfit.core.ui.theme.Spacing
+import com.sociusfit.feature.auth.presentation.register.RegisterNavigationEvent
 import com.sociusfit.feature.auth.presentation.register.RegisterViewModel
 
 /**
- * Register Screen
- *
- * Schermata di registrazione nuovo utente.
- * UI dichiarativa con Jetpack Compose.
- *
- * IMPORTANTE: Il ViewModel deve essere iniettato dall'esterno (:app module).
- *
- * @param onNavigateToLogin Callback per navigare al login
- * @param onNavigateToOnboarding Callback per navigare all'onboarding
- * @param viewModel ViewModel iniettato dal chiamante
+ * Register Screen - FIXED
  */
 @Composable
 fun RegisterScreen(
     onNavigateToLogin: () -> Unit,
     onNavigateToOnboarding: () -> Unit,
-    viewModel: RegisterViewModel  // ← NO default parameter!
+    viewModel: RegisterViewModel
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val navigationEvent by viewModel.navigationEvent.collectAsStateWithLifecycle()
 
-    LaunchedEffect(uiState.isLoading) {
-        if (!uiState.isLoading && uiState.error == null &&
-            uiState.firstName.isNotEmpty()) {
-            onNavigateToOnboarding()
+    // Gestisce navigazione tramite event
+    LaunchedEffect(navigationEvent) {
+        when (navigationEvent) {
+            RegisterNavigationEvent.NavigateToOnboarding -> {
+                onNavigateToOnboarding()
+                viewModel.onNavigationEventConsumed()
+            }
+            null -> { /* No navigation */ }
         }
     }
 

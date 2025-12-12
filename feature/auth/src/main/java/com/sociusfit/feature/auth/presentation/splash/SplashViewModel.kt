@@ -12,10 +12,15 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 
 /**
- * Splash ViewModel
+ * Splash ViewModel - FIXED
  *
  * Gestisce la logica della Splash Screen.
- * Verifica l'autenticazione e decide la navigazione iniziale.
+ * Verifica l'autenticazione e decide la navigazione iniziale:
+ *
+ * - Nessun token -> Login
+ * - Token valido + profileComplete = true -> Profile
+ * - Token valido + profileComplete = false -> Onboarding
+ * - Token expired/invalido -> Login
  */
 class SplashViewModel(
     private val autoLoginUseCase: AutoLoginUseCase
@@ -36,6 +41,15 @@ class SplashViewModel(
 
     /**
      * Verifica lo stato di autenticazione
+     *
+     * FLUSSO CORRETTO:
+     * 1. Aspetta splash delay (2 secondi)
+     * 2. Chiama AutoLoginUseCase
+     * 3. Se Success:
+     *    - profileComplete = true -> Profile
+     *    - profileComplete = false -> Onboarding
+     * 4. Se Error (no token/expired):
+     *    - Login
      */
     private fun checkAuthentication() {
         Timber.tag(TAG).d("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
@@ -61,11 +75,12 @@ class SplashViewModel(
                         Timber.tag(TAG).d("  Email: ${user.email}")
                         Timber.tag(TAG).d("  Profile Complete: ${user.profileComplete}")
 
+                        // IMPORTANTE: Controlla profileComplete per decidere navigazione
                         val destination = if (user.profileComplete) {
-                            Timber.tag(TAG).d("→ Navigating to HOME")
-                            SplashDestination.Home
+                            Timber.tag(TAG).d("→ Profile complete: Navigating to PROFILE")
+                            SplashDestination.Profile
                         } else {
-                            Timber.tag(TAG).d("→ Navigating to ONBOARDING")
+                            Timber.tag(TAG).d("→ Profile incomplete: Navigating to ONBOARDING")
                             SplashDestination.Onboarding
                         }
 
@@ -76,40 +91,45 @@ class SplashViewModel(
                         Timber.tag(TAG).w("✗ Auto-login FAILED")
                         Timber.tag(TAG).w("  Error: ${result.exception.message}")
                         Timber.tag(TAG).w("  Cause: ${result.exception.cause?.message}")
-                        Timber.tag(TAG).d("→ Navigating to LOGIN")
+                        Timber.tag(TAG).d("→ No valid token: Navigating to LOGIN")
 
                         _destination.value = SplashDestination.Login
                     }
 
                     is Result.Loading -> {
-                        Timber.tag(TAG).w("⚠ Unexpected Loading state")
+                        // Non dovrebbe succedere da AutoLoginUseCase
+                        Timber.tag(TAG).w("Unexpected Loading result")
                     }
                 }
 
+                Timber.tag(TAG).d("Authentication check completed")
+                Timber.tag(TAG).d("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+
             } catch (e: Exception) {
                 Timber.tag(TAG).e(e, "Exception during authentication check")
-                Timber.tag(TAG).d("→ Navigating to LOGIN (fallback)")
                 _destination.value = SplashDestination.Login
             }
-
-            Timber.tag(TAG).d("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
         }
     }
 
     /**
-     * Resetta la destinazione dopo che la navigazione è stata gestita
+     * Reset destination dopo navigazione
      */
-    fun onNavigationHandled() {
-        Timber.tag(TAG).d("Navigation handled, resetting destination")
+    fun onNavigationComplete() {
         _destination.value = null
     }
 }
 
 /**
- * Sealed interface per le destinazioni possibili dalla Splash
+ * Destinazioni possibili dalla Splash Screen
+ *
+ * FLUSSO CORRETTO:
+ * - Login: Nessun token o token invalido
+ * - Onboarding: Token valido MA profilo non completato
+ * - Profile: Token valido E profilo completato
  */
 sealed interface SplashDestination {
     data object Login : SplashDestination
     data object Onboarding : SplashDestination
-    data object Home : SplashDestination
+    data object Profile : SplashDestination
 }

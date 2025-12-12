@@ -1,6 +1,5 @@
 package com.sociusfit.feature.auth.presentation.register
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sociusfit.core.domain.Result
@@ -12,12 +11,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 /**
- * Register ViewModel
+ * Register ViewModel - FIXED
  *
  * Gestisce lo stato e la logica della schermata di registrazione.
- * Implementa MVVM pattern con unidirectional data flow.
+ * Dopo registrazione, naviga SEMPRE all'onboarding (profileComplete = false)
  */
 class RegisterViewModel(
     private val registerUseCase: RegisterUseCase,
@@ -31,6 +31,10 @@ class RegisterViewModel(
 
     private val _uiState = MutableStateFlow(RegisterUiState())
     val uiState: StateFlow<RegisterUiState> = _uiState.asStateFlow()
+
+    // Event channel per navigazione one-time
+    private val _navigationEvent = MutableStateFlow<RegisterNavigationEvent?>(null)
+    val navigationEvent: StateFlow<RegisterNavigationEvent?> = _navigationEvent.asStateFlow()
 
     /**
      * Aggiorna il campo firstName
@@ -92,12 +96,19 @@ class RegisterViewModel(
 
     /**
      * Gestisce il click sul pulsante Registrati
+     *
+     * IMPORTANTE: Dopo registrazione SEMPRE -> Onboarding
+     * Il backend restituisce profileComplete = false per nuovi utenti
      */
     fun onRegisterClick() {
         val state = _uiState.value
 
+        Timber.tag(TAG).d("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        Timber.tag(TAG).d("onRegisterClick called")
+
         // Verifica form valido
         if (!state.isFormValid) {
+            Timber.tag(TAG).w("Form validation failed")
             _uiState.update { it.copy(error = "Compila tutti i campi correttamente") }
             return
         }
@@ -106,6 +117,11 @@ class RegisterViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
 
+            Timber.tag(TAG).d("Calling RegisterUseCase...")
+            Timber.tag(TAG).d("  First Name: ${state.firstName}")
+            Timber.tag(TAG).d("  Last Name: ${state.lastName}")
+            Timber.tag(TAG).d("  Email: ${state.email}")
+
             when (val result = registerUseCase(
                 firstName = state.firstName,
                 lastName = state.lastName,
@@ -113,14 +129,24 @@ class RegisterViewModel(
                 password = state.password
             )) {
                 is Result.Success -> {
-                    Log.d(TAG, "Registration successful: ${result.data.id}")
-                    // La navigazione sarà gestita dalla UI che osserva questo stato
-                    // Il successo viene indicato da isLoading = false e error = null
+                    val user = result.data
+                    Timber.tag(TAG).d("✓ Registration SUCCESS")
+                    Timber.tag(TAG).d("  User ID: ${user.id}")
+                    Timber.tag(TAG).d("  Email: ${user.email}")
+                    Timber.tag(TAG).d("  Profile Complete: ${user.profileComplete}")
+
+                    // IMPORTANTE: Dopo registrazione -> SEMPRE Onboarding
+                    // Il backend restituisce profileComplete = false
+                    Timber.tag(TAG).d("→ Navigating to ONBOARDING")
+
                     _uiState.update { it.copy(isLoading = false) }
+                    _navigationEvent.value = RegisterNavigationEvent.NavigateToOnboarding
                 }
 
                 is Result.Error -> {
-                    Log.e(TAG, "Registration failed", result.exception)
+                    Timber.tag(TAG).e("✗ Registration FAILED")
+                    Timber.tag(TAG).e("  Error: ${result.exception.message}")
+
                     _uiState.update {
                         it.copy(
                             isLoading = false,
@@ -137,9 +163,23 @@ class RegisterViewModel(
     }
 
     /**
+     * Consuma l'evento di navigazione
+     */
+    fun onNavigationEventConsumed() {
+        _navigationEvent.value = null
+    }
+
+    /**
      * Dismisses l'errore corrente
      */
     fun onErrorDismissed() {
         _uiState.update { it.copy(error = null) }
     }
+}
+
+/**
+ * Eventi di navigazione one-time
+ */
+sealed interface RegisterNavigationEvent {
+    data object NavigateToOnboarding : RegisterNavigationEvent
 }

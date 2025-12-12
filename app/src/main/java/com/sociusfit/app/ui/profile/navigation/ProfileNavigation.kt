@@ -11,9 +11,6 @@ import com.sociusfit.app.ui.profile.ProfileScreen
 import com.sociusfit.app.ui.profile.onboarding.OnboardingBioScreen
 import com.sociusfit.app.ui.profile.onboarding.OnboardingPhotoScreen
 import com.sociusfit.app.ui.profile.onboarding.OnboardingSportsScreen
-import com.sociusfit.feature.profile.domain.model.ProfileSport
-import com.sociusfit.feature.profile.domain.model.SportLevel
-import com.sociusfit.feature.profile.presentation.onboarding.photo.ProfileData
 
 /**
  * Routes per Profile module
@@ -31,6 +28,9 @@ object ProfileRoutes {
 
 /**
  * Extension per aggiungere navigation al Profile module
+ *
+ * AGGIORNATO: Usa OnboardingRepository per gestire lo stato temporaneo
+ * invece di savedStateHandle
  */
 fun NavGraphBuilder.addProfileNavigation(
     navController: NavHostController,
@@ -42,14 +42,8 @@ fun NavGraphBuilder.addProfileNavigation(
     // Onboarding Bio - Step 1
     composable(ProfileRoutes.ONBOARDING_BIO) {
         OnboardingBioScreen(
-            onContinue = { age, city, bio, maxDistance ->
-                // Salva dati temporanei
-                navController.currentBackStackEntry?.savedStateHandle?.apply {
-                    set("age", age)
-                    set("city", city)
-                    set("bio", bio)
-                    set("maxDistance", maxDistance)
-                }
+            onContinue = {
+                // I dati sono già salvati in OnboardingRepository
                 navController.navigate(ProfileRoutes.ONBOARDING_SPORTS)
             }
         )
@@ -58,11 +52,8 @@ fun NavGraphBuilder.addProfileNavigation(
     // Onboarding Sports - Step 2
     composable(ProfileRoutes.ONBOARDING_SPORTS) {
         OnboardingSportsScreen(
-            onContinue = { selectedSports ->
-                // Salva sport selezionati
-                navController.currentBackStackEntry?.savedStateHandle?.apply {
-                    set("selectedSports", HashMap(selectedSports))
-                }
+            onContinue = {
+                // I dati sono già salvati in OnboardingRepository
                 navController.navigate(ProfileRoutes.ONBOARDING_PHOTO)
             },
             onBack = {
@@ -73,39 +64,8 @@ fun NavGraphBuilder.addProfileNavigation(
 
     // Onboarding Photo - Step 3
     composable(ProfileRoutes.ONBOARDING_PHOTO) {
-        // Recupera dati dai step precedenti
-        val savedStateHandle = navController.previousBackStackEntry?.savedStateHandle
-        val age = savedStateHandle?.get<Int>("age") ?: 25
-        val city = savedStateHandle?.get<String>("city") ?: ""
-        val bio = savedStateHandle?.get<String>("bio") ?: ""
-        val maxDistance = savedStateHandle?.get<Int>("maxDistance") ?: 25
-
-        @Suppress("UNCHECKED_CAST")
-        val selectedSportsMap = navController.previousBackStackEntry
-            ?.savedStateHandle
-            ?.get<HashMap<String, SportLevel>>("selectedSports") ?: hashMapOf()
-
-        val profileData = ProfileData(
-            userId = getUserId(),
-            firstName = getUserName().split(" ").firstOrNull() ?: "",
-            lastName = getUserName().split(" ").drop(1).joinToString(" "),
-            age = age,
-            city = city,
-            latitude = 0.0, // Backend calcolerà con geocoding
-            longitude = 0.0,
-            bio = bio,
-            maxDistance = maxDistance,
-            sports = selectedSportsMap.map { (sportId, level) ->
-                ProfileSport(
-                    sportId = sportId,
-                    sportName = "", // Backend popolerà
-                    level = level
-                )
-            }
-        )
-
+        // Il ViewModel leggerà i dati da OnboardingRepository
         OnboardingPhotoScreen(
-            profileData = profileData,
             onComplete = {
                 // Vai a profile, rimuovi tutto lo stack onboarding
                 navController.navigate(ProfileRoutes.PROFILE) {
@@ -152,27 +112,5 @@ fun NavGraphBuilder.addProfileNavigation(
                 navController.popBackStack()
             }
         )
-    }
-}
-
-/**
- * Extension functions per navigazione type-safe
- */
-fun NavHostController.navigateToProfile() {
-    navigate(ProfileRoutes.PROFILE)
-}
-
-fun NavHostController.navigateToEditProfile() {
-    navigate(ProfileRoutes.EDIT_PROFILE)
-}
-
-fun NavHostController.navigateToOtherUserProfile(userId: String) {
-    navigate(ProfileRoutes.otherUserProfile(userId))
-}
-
-fun NavHostController.navigateToOnboarding() {
-    navigate(ProfileRoutes.ONBOARDING_BIO) {
-        // Clear back stack per evitare loop
-        popUpTo(0) { inclusive = false }
     }
 }

@@ -2,6 +2,7 @@ package com.sociusfit.feature.profile.di
 
 import com.sociusfit.feature.profile.data.mapper.ProfileMapper
 import com.sociusfit.feature.profile.data.mapper.SportsMapper
+import com.sociusfit.feature.profile.data.repository.OnboardingRepository
 import com.sociusfit.feature.profile.data.repository.ProfileRepositoryImpl
 import com.sociusfit.feature.profile.data.repository.SportsRepositoryImpl
 import com.sociusfit.feature.profile.domain.repository.ProfileRepository
@@ -17,7 +18,7 @@ import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 /**
- * Koin module per Profile feature
+ * Koin module per Profile feature - WITH ONBOARDING REPOSITORY
  */
 val profileModule = module {
 
@@ -42,6 +43,9 @@ val profileModule = module {
         )
     }
 
+    // Onboarding Repository (Singleton per mantenere lo stato)
+    single { OnboardingRepository() }
+
     // Use Cases
     factory { CreateProfileUseCase(get()) }
     factory { UpdateProfileUseCase(get()) }
@@ -51,9 +55,9 @@ val profileModule = module {
     factory { GetAllSportsUseCase(get()) }
 
     // ViewModels
-    viewModel { OnboardingBioViewModel() }
-    viewModel { OnboardingSportsViewModel(get()) }
-    viewModel { OnboardingPhotoViewModel(get(), get()) }
+    viewModel { OnboardingBioViewModel(get(), get()) }  // MunicipalityProvider + OnboardingRepository
+    viewModel { OnboardingSportsViewModel(get(), get()) }  // GetAllSportsUseCase + OnboardingRepository
+    viewModel { OnboardingPhotoViewModel(get(), get(), get()) }  // UploadPhoto + CreateProfile + OnboardingRepository
     viewModel { ProfileViewModel(get()) }
     viewModel { EditProfileViewModel(get(), get(), get(), get()) }
     viewModel { OtherUserProfileViewModel(get()) }
