@@ -119,7 +119,8 @@ class OnboardingPhotoViewModel(
                         sportName = "", // Sarà popolato dal backend
                         level = level
                     )
-                }
+                },
+                gender = ""
             )
 
             // Invia al backend

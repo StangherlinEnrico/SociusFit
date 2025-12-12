@@ -1,20 +1,26 @@
 package com.sociusfit.app.ui.profile.onboarding
 
+import android.Manifest
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.sociusfit.feature.profile.presentation.onboarding.photo.OnboardingPhotoViewModel
 import org.koin.androidx.compose.koinViewModel
 import java.io.File
@@ -22,7 +28,12 @@ import java.io.File
 /**
  * Step 3/3 Onboarding: Upload Foto Profilo (opzionale)
  *
- * AGGIORNATO: Legge i dati da OnboardingRepository
+ * Features:
+ * - Verifica successo foto prima di aggiornare UI
+ * - Anteprima foto con Coil
+ * - Icona X per rimuovere foto
+ * - "Completa profilo" se foto presente
+ * - "Salta per ora" se foto assente
  */
 @Composable
 fun OnboardingPhotoScreen(
@@ -35,7 +46,13 @@ fun OnboardingPhotoScreen(
 
     var photoUri by remember { mutableStateOf<Uri?>(null) }
     var photoFile by remember { mutableStateOf<File?>(null) }
+    var showPermissionDialog by remember { mutableStateOf(false) }
 
+    // Temporary URI per la fotocamera (non mostriamo finché non confermato)
+    var tempCameraUri by remember { mutableStateOf<Uri?>(null) }
+    var tempCameraFile by remember { mutableStateOf<File?>(null) }
+
+    // Gallery launcher (no permissions needed on Android 10+)
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
@@ -45,21 +62,54 @@ fun OnboardingPhotoScreen(
 
             // Copy file to cache for upload
             val cacheFile = File(context.cacheDir, "profile_photo_${System.currentTimeMillis()}.jpg")
-            context.contentResolver.openInputStream(uri)?.use { input ->
-                cacheFile.outputStream().use { output ->
-                    input.copyTo(output)
+            try {
+                context.contentResolver.openInputStream(uri)?.use { input ->
+                    cacheFile.outputStream().use { output ->
+                        input.copyTo(output)
+                    }
                 }
+                photoFile = cacheFile
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
-            photoFile = cacheFile
         }
     }
 
+    // Camera launcher - IMPORTANTE: aggiorna UI solo se success = true
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
-        if (success && photoUri != null) {
-            viewModel.onPhotoSelected(photoUri!!)
-            photoFile = File(photoUri!!.path!!)
+        if (success && tempCameraUri != null) {
+            // Utente ha confermato la foto
+            photoUri = tempCameraUri
+            photoFile = tempCameraFile
+            viewModel.onPhotoSelected(tempCameraUri!!)
+        }
+        // Se success = false, l'utente ha annullato → non facciamo nulla
+        // Reset temp vars
+        tempCameraUri = null
+        tempCameraFile = null
+    }
+
+    // Permission launcher for camera
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            // Permission granted, proceed with camera
+            val file = File(context.cacheDir, "profile_photo_${System.currentTimeMillis()}.jpg")
+            val uri = FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.provider",
+                file
+            )
+            // Salviamo in temp, aggiorneremo photoUri solo se confermato
+            tempCameraUri = uri
+            tempCameraFile = file
+            cameraLauncher.launch(uri)
+        } else {
+            // Permission denied
+            showPermissionDialog = true
         }
     }
 
@@ -74,19 +124,31 @@ fun OnboardingPhotoScreen(
         photoUri = photoUri,
         onSelectFromGallery = { galleryLauncher.launch("image/*") },
         onTakePhoto = {
-            val file = File(context.cacheDir, "profile_photo_${System.currentTimeMillis()}.jpg")
-            val uri = FileProvider.getUriForFile(
-                context,
-                "${context.packageName}.provider",
-                file
-            )
-            photoUri = uri
-            cameraLauncher.launch(uri)
+            // Request camera permission first
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+        },
+        onRemovePhoto = {
+            photoUri = null
+            photoFile = null
         },
         onSkip = { viewModel.onSkip() },
         onComplete = { viewModel.onComplete(photoFile) },
         onBack = onBack
     )
+
+    // Permission denied dialog
+    if (showPermissionDialog) {
+        AlertDialog(
+            onDismissRequest = { showPermissionDialog = false },
+            title = { Text("Permesso fotocamera necessario") },
+            text = { Text("Per scattare una foto, è necessario concedere il permesso di accesso alla fotocamera. Puoi abilitarlo nelle impostazioni dell'app.") },
+            confirmButton = {
+                TextButton(onClick = { showPermissionDialog = false }) {
+                    Text("OK")
+                }
+            }
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -96,10 +158,13 @@ private fun OnboardingPhotoContent(
     photoUri: Uri?,
     onSelectFromGallery: () -> Unit,
     onTakePhoto: () -> Unit,
+    onRemovePhoto: () -> Unit,
     onSkip: () -> Unit,
     onComplete: () -> Unit,
     onBack: () -> Unit
 ) {
+    val context = LocalContext.current
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -107,7 +172,7 @@ private fun OnboardingPhotoContent(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Indietro"
                         )
                     }
@@ -137,19 +202,78 @@ private fun OnboardingPhotoContent(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            if (photoUri != null) {
-                // TODO: Mostra preview foto
-                Text("Foto selezionata: $photoUri")
-            } else {
-                Text(
-                    text = "Aggiungi una foto profilo",
-                    style = MaterialTheme.typography.headlineSmall
-                )
+            // Photo Preview or Placeholder
+            Box(
+                modifier = Modifier.size(200.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                if (photoUri != null) {
+                    // Anteprima foto circolare con Coil
+                    Card(
+                        modifier = Modifier.fillMaxSize(),
+                        shape = CircleShape
+                    ) {
+                        AsyncImage(
+                            model = ImageRequest.Builder(context)
+                                .data(photoUri)
+                                .crossfade(true)
+                                .build(),
+                            contentDescription = "Foto profilo",
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+
+                    // X button in alto a destra per rimuovere
+                    IconButton(
+                        onClick = onRemovePhoto,
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .size(36.dp),
+                        colors = IconButtonDefaults.iconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.error,
+                            contentColor = MaterialTheme.colorScheme.onError
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Rimuovi foto",
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                } else {
+                    // Placeholder quando nessuna foto
+                    Card(
+                        modifier = Modifier.fillMaxSize(),
+                        shape = CircleShape,
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    ) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Nessuna foto",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
             }
+
+            Text(
+                text = if (photoUri != null) "Foto selezionata" else "Aggiungi una foto profilo",
+                style = MaterialTheme.typography.headlineSmall
+            )
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Buttons
+            // Buttons - sempre visibili
             Button(
                 onClick = onSelectFromGallery,
                 modifier = Modifier.fillMaxWidth(),
@@ -166,13 +290,9 @@ private fun OnboardingPhotoContent(
                 Text("Scatta foto")
             }
 
-            TextButton(
-                onClick = onSkip,
-                enabled = !uiState.isUploading
-            ) {
-                Text("Salta per ora")
-            }
+            Spacer(modifier = Modifier.height(8.dp))
 
+            // Action button - "Completa profilo" se foto presente, "Salta per ora" altrimenti
             if (photoUri != null) {
                 Button(
                     onClick = onComplete,
@@ -188,13 +308,31 @@ private fun OnboardingPhotoContent(
                         Text("Completa profilo")
                     }
                 }
+            } else {
+                TextButton(
+                    onClick = onSkip,
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !uiState.isUploading
+                ) {
+                    Text("Salta per ora")
+                }
             }
 
+            // Error message
             if (uiState.error != null) {
-                Text(
-                    text = uiState.error!!,
-                    color = MaterialTheme.colorScheme.error
-                )
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = uiState.error!!,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(12.dp)
+                    )
+                }
             }
         }
     }

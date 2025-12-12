@@ -44,10 +44,10 @@ object AppConfig {
     val BASE_URL: String
         get() = if (IS_DEBUG) {
             // DEVELOPMENT - Backend locale
-            // "http://10.0.2.2:5000/api/"  // Emulatore Android → localhost:5000
+            "http://10.0.2.2:5000/api/"  // Emulatore Android → localhost:5000
 
             // Se usi dispositivo fisico, cambia con il tuo IP:
-            "http://192.168.1.27:5000/api/"  // Sostituisci con il tuo IP locale
+            // "http://192.168.1.27:5000/api/"  // Sostituisci con il tuo IP locale
         } else {
             // PRODUCTION - Backend reale
             "https://api.sociusfit.com/api/"

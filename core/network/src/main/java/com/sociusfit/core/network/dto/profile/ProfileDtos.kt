@@ -9,24 +9,13 @@ data class ProfileDto(
     val longitude: Double?,
     val maxDistance: Int,
     val photoUrl: String?,
-    val sports: List<ProfileSportDto>
+    val sports: List<ProfileSportDto>,
+    val gender: String
 )
 
 data class ProfileSportDto(
     val sportId: String,
     val sportName: String,
-    val level: String
-)
-
-data class UpdateProfileRequest(
-    val bio: String?,
-    val city: String?,
-    val maxDistance: Int,
-    val sports: List<SportLevelRequest>
-)
-
-data class SportLevelRequest(
-    val sportId: String,
     val level: String
 )
 

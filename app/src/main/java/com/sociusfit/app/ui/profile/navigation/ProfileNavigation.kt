@@ -30,7 +30,6 @@ object ProfileRoutes {
  * Extension per aggiungere navigation al Profile module
  *
  * AGGIORNATO: Usa OnboardingRepository per gestire lo stato temporaneo
- * invece di savedStateHandle
  */
 fun NavGraphBuilder.addProfileNavigation(
     navController: NavHostController,
@@ -112,5 +111,30 @@ fun NavGraphBuilder.addProfileNavigation(
                 navController.popBackStack()
             }
         )
+    }
+}
+
+/**
+ * Extension functions per navigazione type-safe
+ */
+fun NavHostController.navigateToProfile() {
+    navigate(ProfileRoutes.PROFILE) {
+        // Opzionale: clear back stack se necessario
+        // popUpTo(0) { inclusive = false }
+    }
+}
+
+fun NavHostController.navigateToEditProfile() {
+    navigate(ProfileRoutes.EDIT_PROFILE)
+}
+
+fun NavHostController.navigateToOtherUserProfile(userId: String) {
+    navigate(ProfileRoutes.otherUserProfile(userId))
+}
+
+fun NavHostController.navigateToOnboarding() {
+    navigate(ProfileRoutes.ONBOARDING_BIO) {
+        // Clear back stack per evitare loop
+        popUpTo(0) { inclusive = false }
     }
 }

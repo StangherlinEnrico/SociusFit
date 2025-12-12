@@ -8,6 +8,7 @@ data class Profile(
     val firstName: String,
     val lastName: String,
     val age: Int,
+    val gender: String,
     val city: String,
     val latitude: Double,
     val longitude: Double,

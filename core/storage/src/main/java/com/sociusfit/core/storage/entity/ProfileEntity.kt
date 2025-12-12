@@ -30,7 +30,8 @@ data class ProfileEntity(
     val bio: String,
     val maxDistance: Int,
     val photoUrl: String?,
-    val updatedAt: Long
+    val updatedAt: Long,
+    val gender: String
 )
 
 /**

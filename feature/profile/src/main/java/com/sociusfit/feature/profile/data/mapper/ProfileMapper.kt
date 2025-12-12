@@ -17,6 +17,7 @@ class ProfileMapper {
             firstName = "", // Non presente nel DTO, deve essere popolato da User
             lastName = "",  // Non presente nel DTO, deve essere popolato da User
             age = 0, // Non presente nel DTO Profile
+            gender = dto.gender,
             city = dto.city ?: "",
             latitude = dto.latitude ?: 0.0,
             longitude = dto.longitude ?: 0.0,
@@ -43,7 +44,8 @@ class ProfileMapper {
             bio = dto.bio ?: "",
             maxDistance = dto.maxDistance,
             photoUrl = dto.photoUrl,
-            updatedAt = System.currentTimeMillis()
+            updatedAt = System.currentTimeMillis(),
+            gender = dto.gender
         )
     }
 
@@ -60,7 +62,8 @@ class ProfileMapper {
             bio = entity.bio,
             maxDistance = entity.maxDistance,
             photoUrl = entity.photoUrl,
-            sports = emptyList() // Will be loaded via join
+            sports = emptyList(),
+            gender = entity.gender
         )
     }
 }
